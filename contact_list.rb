@@ -4,6 +4,7 @@ require 'pry'
 
 require File.expand_path('../phone.rb', __FILE__)
 require File.expand_path('../row.rb', __FILE__)
+require File.expand_path('../column.rb', __FILE__)
 
 class ContactList
 
@@ -12,6 +13,7 @@ class ContactList
 
   include Phone
   include Row
+  include Column
 
   FIELDS = YAML.load(File.open('google.yaml'))
 
@@ -84,6 +86,36 @@ class ContactList
       Row.remove_duplicates(websites, contact)
       Row.remove_duplicates(phones, contact)
     end
+  end
+
+  def make_email_array
+    email_hash = {}
+    @contacts.each do |contact|
+      first_email = contact[FIELDS["emails"]["value"][0]]
+      if email_hash[first_email]
+        email_hash[first_email] = email_hash[first_email] << contact
+      else
+        email_hash[first_email] = [contact]
+      end
+    end
+    email_hash.select! {|key, value| value.size > 1}
+  end
+
+  def eliminate_dups(contact_ary)
+    contact_hash = {}
+    contact_ary.each do |contact|
+      headers.each do |header|
+        if contact_hash[header] 
+          contact_hash[header] << contact[header]
+        else
+          contact_hash[header] = [contact[header]]
+        end
+      end
+    end
+    contact_hash.each do |field, value|
+      contact_hash[field] = value.uniq
+    end
+    contact_hash
   end
 end
 
