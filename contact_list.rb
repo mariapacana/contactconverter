@@ -3,6 +3,7 @@ require 'yaml'
 require 'pry'
 
 require File.expand_path('../phone.rb', __FILE__)
+require File.expand_path('../row.rb', __FILE__)
 
 class ContactList
 
@@ -10,6 +11,7 @@ class ContactList
   attr_reader :not_google
 
   include Phone
+  include Row
 
   FIELDS = YAML.load(File.open('google.yaml'))
 
@@ -60,12 +62,12 @@ class ContactList
     File.open(filename, 'w') {|f| f.write(@contacts.to_s) }
   end
 
-  def include_columns(type)
-    FIELDS[type].each { |col| @contacts[col] = nil }
+  def include_columns(field, sub_field)
+    FIELDS[field][sub_field].each { |col| @contacts[col] = nil }
   end
 
   def process_phones
-    include_columns("phones")
+    include_columns("phones", "type")
     @contacts.each do |contact|
       Phone.get_phone_types(contact) if @not_google
       Phone.standardize_phones(contact, FIELDS["phones"]["value"])
@@ -73,27 +75,14 @@ class ContactList
   end
 
   def process_fields
+    emails = Hash[FIELDS["emails"]["value"].zip(FIELDS["emails"]["type"])]
+    websites = Hash[FIELDS["websites"]["value"].zip(FIELDS["websites"]["type"])]
+    phones = Hash[FIELDS["phones"]["value"].zip(FIELDS["phones"]["type"])]
+
     @contacts.each do |contact|
-      emails = Hash[FIELDS["emails"]["value"].zip(FIELDS["emails"]["type"])]
-      contact_emails = {}
-
-      emails.each do |email_val, email_type|
-        contact_emails[contact[email_val]] = contact[email_type]
-      end
-
-      unique_email_vals = contact_emails.keys.uniq.select {|email| email != nil && email != ""}
-
-      emails.each do |email_val, email_type|
-        if !(unique_email_vals.empty?)
-          email_val = unique_email_vals.shift
-          contact[email_val] = email_val
-          contact[email_type] = contact_emails[email_val]
-        else
-          contact[email_val] = nil
-          contact[email_type] = nil
-        end
-      end
-
+      Row.remove_duplicates(emails, contact)
+      Row.remove_duplicates(websites, contact)
+      Row.remove_duplicates(phones, contact)
     end
   end
 end

@@ -1,4 +1,3 @@
-
 module Phone
 
   def self.get_phone_types(person)
