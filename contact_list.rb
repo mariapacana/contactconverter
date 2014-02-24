@@ -7,6 +7,7 @@ require File.expand_path('../phone.rb', __FILE__)
 class ContactList
 
   attr_accessor :contacts, :config
+  attr_reader :not_google
 
   include Phone
 
@@ -23,6 +24,7 @@ class ContactList
     if args[:config_file].nil?
       @contacts = CSV.read(args[:source_file], headers: true)
     else
+      @not_google = true
       @contacts = CSV.read(args[:source_file], 
                                 headers: true, 
                                 header_converters: change_headers)
@@ -64,14 +66,37 @@ class ContactList
 
   def process_phones
     include_columns("phones")
-    @contacts.each do |person|
-      Phone.get_phone_types(person)
-      Phone.standardize_phones(person, FIELDS["phones"]["value"])
+    @contacts.each do |contact|
+      Phone.get_phone_types(contact) if @not_google
+      Phone.standardize_phones(contact, FIELDS["phones"]["value"])
     end
   end
 
-end
+  def process_fields
+    @contacts.each do |contact|
+      emails = Hash[FIELDS["emails"]["value"].zip(FIELDS["emails"]["type"])]
+      contact_emails = {}
 
+      emails.each do |email_val, email_type|
+        contact_emails[contact[email_val]] = contact[email_type]
+      end
+
+      unique_email_vals = contact_emails.keys.uniq.select {|email| email != nil && email != ""}
+
+      emails.each do |email_val, email_type|
+        if !(unique_email_vals.empty?)
+          email_val = unique_email_vals.shift
+          contact[email_val] = email_val
+          contact[email_type] = contact_emails[email_val]
+        else
+          contact[email_val] = nil
+          contact[email_type] = nil
+        end
+      end
+
+    end
+  end
+end
 
 class CSV::Row
 
