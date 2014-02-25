@@ -86,58 +86,46 @@ class ContactList
     end
   end
 
+  def format_non_google_list
+    process_phones
+    process_fields
+    delete_blank_columns
+  end
+
   def make_email_array
     email_hash = {}
     @contacts.each do |contact|
       first_email = contact[FIELDS["emails"]["value"][0]]
-      if !(email_hash[first_email].nil? || email_hash[first_email] == "")
+      if !(email_hash[first_email].nil?)
         email_hash[first_email] = email_hash[first_email] << contact
       else
-        email_hash[first_email] = [contact]
+        email_hash[first_email] = CSV::Table.new([contact])
       end
     end
-    email_hash.select! {|key, value| value.size > 1 && !key.nil? }
+    email_hash.select! {|email, contact| contact.size > 1 && !email.nil? && !email.empty? }
   end
 
   def remove_contact_dups(email_hash)
-    email_hash.each do |email, contact_ary|
+    email_hash.each do |email, contact_table|
       new_contact = {}
-      contact_info = get_contact_info(contact_ary)
-      remove_field_dups(PHONES, contact_ary, new_contact)
-      remove_field_dups(EMAILS, contact_ary, new_contact)
-      remove_field_dups(WEBSITES, contact_ary, new_contact)
-
-    end
-  end
-
-  def get_contact_info(contact_ary)
-    contact_info = {}
-    contact_ary.each do |contact|
+      remove_field_dups(PHONES, contact_table, new_contact)
+      remove_field_dups(EMAILS, contact_table, new_contact)
+      remove_field_dups(WEBSITES, contact_table, new_contact)
       headers.each do |header|
-        if contact_info[header] 
-          contact_info[header] << contact[header]
-        else
-          contact_info[header] = [contact[header]]
-        end
+        new_contact[header] = contact_table[header].join("\n") if !(new_contact[header])
       end
     end
-    contact_info.each do |field, value|
-      contact_info[field] = value.uniq
-    end
-    contact_info
   end
 
-  def get_unique_field_vals(val_type_hash, contact_ary)
-    val_type_hash.keys.map do |phone_val|
-      contact_ary.map do |contact|
-        if !(contact[phone_val].nil? || contact[phone_val].empty?)
-          [contact[phone_val], contact[PHONES[phone_val]]]
-        end
+  def get_unique_field_vals(val_type_hash, contact)
+    val_type_hash.map do |val, type|
+      contact[val].zip(contact[type]).select do |a| 
+        !((a[0].nil? || a[0].empty?) && (a[1].nil? || a[1].empty?))
       end
-    end.reduce(:+).uniq.select {|entry| entry != nil && entry != "" }
+    end.reduce(:+)
   end
 
-  def assign_values(val_type_hash, contact_ary, unique_values, new_contact)
+  def assign_values(val_type_hash, unique_values, new_contact)
     val_type_hash.each do |field_val, field_type|
       if !(unique_values.empty?)
         contact_val_type = unique_values.shift
@@ -151,9 +139,9 @@ class ContactList
     new_contact
   end
 
-  def remove_field_dups(val_type_hash, contact_ary, new_contact)
-    unique_values = get_unique_field_vals(val_type_hash, contact_ary)
-    assign_values(val_type_hash, contact_ary, unique_values, new_contact)
+  def remove_field_dups(val_type_hash, contact, new_contact)
+    unique_values = get_unique_field_vals(val_type_hash, contact)
+    assign_values(val_type_hash, unique_values, new_contact)
   end
 
 end
