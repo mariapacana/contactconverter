@@ -26,12 +26,11 @@ class ContactList
       header = @config[header].nil? ? header : @config[header]
     end
 
-    @config = YAML.load(File.open(args[:config_file]))
-
     if args[:config_file].nil?
       @contacts = CSV.read(args[:source_file], headers: true)
     else
       @not_google = true
+      @config = YAML.load(File.open(args[:config_file])) 
       @contacts = CSV.read(args[:source_file], 
                                 headers: true, 
                                 header_converters: change_headers)
@@ -80,7 +79,6 @@ class ContactList
   end
 
   def process_fields
-
     @contacts.each do |contact|
       Row.remove_duplicates(EMAILS, contact)
       Row.remove_duplicates(WEBSITES, contact)
@@ -92,18 +90,23 @@ class ContactList
     email_hash = {}
     @contacts.each do |contact|
       first_email = contact[FIELDS["emails"]["value"][0]]
-      if email_hash[first_email]
+      if !(email_hash[first_email].nil? || email_hash[first_email] == "")
         email_hash[first_email] = email_hash[first_email] << contact
       else
         email_hash[first_email] = [contact]
       end
     end
-    email_hash.select! {|key, value| value.size > 1}
+    email_hash.select! {|key, value| value.size > 1 && !key.nil? }
   end
 
   def remove_contact_dups(email_hash)
-    email_hash.each do |contact_ary|
-      binding.pry
+    email_hash.each do |email, contact_ary|
+      new_contact = {}
+      contact_info = get_contact_info(contact_ary)
+      remove_field_dups(PHONES, contact_ary, new_contact)
+      remove_field_dups(EMAILS, contact_ary, new_contact)
+      remove_field_dups(WEBSITES, contact_ary, new_contact)
+
     end
   end
 
@@ -124,14 +127,36 @@ class ContactList
     contact_info
   end
 
-  def remove_dups(contact)
-    unique_values = PHONES.keys.map {|f| contact[f]}.flatten.uniq.select {|f|
-      f != nil && f != "" }
-    contact_val_types = Row.aggregate_contact_field(PHONES, contact)
-    Row.assign_values(contact, PHONES, contact_val_types, unique_values)
+  def get_unique_field_vals(val_type_hash, contact_ary)
+    val_type_hash.keys.map do |phone_val|
+      contact_ary.map do |contact|
+        if !(contact[phone_val].nil? || contact[phone_val].empty?)
+          [contact[phone_val], contact[PHONES[phone_val]]]
+        end
+      end
+    end.reduce(:+).uniq.select {|entry| entry != nil && entry != "" }
   end
-end
 
+  def assign_values(val_type_hash, contact_ary, unique_values, new_contact)
+    val_type_hash.each do |field_val, field_type|
+      if !(unique_values.empty?)
+        contact_val_type = unique_values.shift
+        new_contact[field_val] = contact_val_type[0]
+        new_contact[field_type] = contact_val_type[1]
+      else
+        new_contact[field_val] = nil
+        new_contact[field_type] = nil
+      end
+    end
+    new_contact
+  end
+
+  def remove_field_dups(val_type_hash, contact_ary, new_contact)
+    unique_values = get_unique_field_vals(val_type_hash, contact_ary)
+    assign_values(val_type_hash, contact_ary, unique_values, new_contact)
+  end
+
+end
 
 class CSV::Row
 
