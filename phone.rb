@@ -4,6 +4,7 @@ module Phone
     person['Phone 2 - Type'] = 'mobile' if person.has_field?('Phone 2 - Value')
     person['Phone 3 - Type'] = 'home' if person.has_field?('Phone 3 - Value')
     person['Phone 4 - Type'] = 'pager' if person.has_field?('Phone 4 - Value')
+    person['Phone 5 - Type'] = 'fax' if person.has_field?('Phone 5 - Value')
 
     if person['Phone 1 - Value'] == person['Phone 2 - Value']
       person['Phone 1 - Type'] = 'mobile'

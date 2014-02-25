@@ -16,6 +16,9 @@ class ContactList
   include Column
 
   FIELDS = YAML.load(File.open('google.yaml'))
+  EMAILS = Hash[FIELDS["emails"]["value"].zip(FIELDS["emails"]["type"])]
+  WEBSITES = Hash[FIELDS["websites"]["value"].zip(FIELDS["websites"]["type"])]
+  PHONES = Hash[FIELDS["phones"]["value"].zip(FIELDS["phones"]["type"])]
 
   def initialize(args)
 
@@ -77,14 +80,11 @@ class ContactList
   end
 
   def process_fields
-    emails = Hash[FIELDS["emails"]["value"].zip(FIELDS["emails"]["type"])]
-    websites = Hash[FIELDS["websites"]["value"].zip(FIELDS["websites"]["type"])]
-    phones = Hash[FIELDS["phones"]["value"].zip(FIELDS["phones"]["type"])]
 
     @contacts.each do |contact|
-      Row.remove_duplicates(emails, contact)
-      Row.remove_duplicates(websites, contact)
-      Row.remove_duplicates(phones, contact)
+      Row.remove_duplicates(EMAILS, contact)
+      Row.remove_duplicates(WEBSITES, contact)
+      Row.remove_duplicates(PHONES, contact)
     end
   end
 
@@ -101,23 +101,37 @@ class ContactList
     email_hash.select! {|key, value| value.size > 1}
   end
 
-  def eliminate_dups(contact_ary)
-    contact_hash = {}
+  def remove_contact_dups(email_hash)
+    email_hash.each do |contact_ary|
+      binding.pry
+    end
+  end
+
+  def get_contact_info(contact_ary)
+    contact_info = {}
     contact_ary.each do |contact|
       headers.each do |header|
-        if contact_hash[header] 
-          contact_hash[header] << contact[header]
+        if contact_info[header] 
+          contact_info[header] << contact[header]
         else
-          contact_hash[header] = [contact[header]]
+          contact_info[header] = [contact[header]]
         end
       end
     end
-    contact_hash.each do |field, value|
-      contact_hash[field] = value.uniq
+    contact_info.each do |field, value|
+      contact_info[field] = value.uniq
     end
-    contact_hash
+    contact_info
+  end
+
+  def remove_dups(contact)
+    unique_values = PHONES.keys.map {|f| contact[f]}.flatten.uniq.select {|f|
+      f != nil && f != "" }
+    contact_val_types = Row.aggregate_contact_field(PHONES, contact)
+    Row.assign_values(contact, PHONES, contact_val_types, unique_values)
   end
 end
+
 
 class CSV::Row
 
