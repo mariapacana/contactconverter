@@ -19,6 +19,10 @@ class ContactList
   EMAILS = Hash[FIELDS["emails"]["value"].zip(FIELDS["emails"]["type"])]
   WEBSITES = Hash[FIELDS["websites"]["value"].zip(FIELDS["websites"]["type"])]
   PHONES = Hash[FIELDS["phones"]["value"].zip(FIELDS["phones"]["type"])]
+  ADDRESSES = FIELDS["addresses"]
+
+  STRUC_FIELDS = YAML.load(File.open('structured.yaml'))
+  STRUC_ADDRESSES = STRUC_FIELDS["addresses"]
 
   def initialize(args)
 
@@ -111,10 +115,65 @@ class ContactList
       remove_field_dups(PHONES, contact_table, new_contact)
       remove_field_dups(EMAILS, contact_table, new_contact)
       remove_field_dups(WEBSITES, contact_table, new_contact)
+      remove_address_dups(contact_table, new_contact)
       headers.each do |header|
         new_contact[header] = contact_table[header].join("\n") if !(new_contact[header])
       end
     end
+  end
+
+  def remove_address_dups(contact_table, new_contact)
+    unique_address_map = get_unique_address_vals(contact_table)
+    STRUC_ADDRESSES.each do |address, values|
+      addy = unique_address_map.shift
+      values.each do |value|
+        new_contact[value] = addy.shift
+      end
+    end
+  end
+
+  def get_unique_address_vals(contact_table)
+    address_hash = get_address_hash(contact_table)
+    address_map = address_mapping(address_hash)
+    address_map = get_unique_addresses(address_map)
+  end
+
+  def get_address_hash(contact_table)
+    address_hash = {}
+    ADDRESSES.each do |type, vals|
+      new_arry = []
+      contact_table.each do |row|
+        if new_arry.empty?
+          new_arry = vals.map {|val| row[val]}
+        else
+          new_arry = new_arry + vals.map {|val| row[val]}
+        end
+      end
+      address_hash[type] = new_arry
+    end
+    address_hash
+  end
+
+  def address_mapping(address_hash)
+    length = address_hash[address_hash.keys.first].length
+    address_mapping = {}
+    (0..length-1).each do |num|
+      arry = []
+      address_hash.each do |type, vals|
+        arry << address_hash[type][num]
+      end
+      address_mapping[address_hash["street"][num]] = arry
+    end
+    address_mapping
+  end
+
+  def get_unique_addresses(address_map)
+    address_arry = []
+    keys = address_map.keys.uniq.select {|key| key != nil && key != "" }
+    address_map.each do |key, value| 
+      address_arry << value if keys.include?(key) 
+    end
+    address_arry
   end
 
   def get_unique_field_vals(val_type_hash, contact)
