@@ -93,10 +93,22 @@ class ContactList
   def format_non_google_list
     process_phones
     process_fields
-    delete_blank_columns
   end
 
-  def make_email_array
+  def generate_contact_duplicates
+    email_hash = make_email_hash
+    contacts_arry = remove_contact_dups(email_hash)
+    table = convert_contact_arry_to_csv(contacts_arry)
+
+    CSV.open("contact_duplicates.csv", "wb") do |csv|
+      csv << headers
+      table.each do |row|
+        csv << row
+      end
+    end
+  end
+
+  def make_email_hash
     email_hash = {}
     @contacts.each do |contact|
       first_email = contact[FIELDS["emails"]["value"][0]]
@@ -110,6 +122,7 @@ class ContactList
   end
 
   def remove_contact_dups(email_hash)
+    contacts_arry = []
     email_hash.each do |email, contact_table|
       new_contact = {}
       remove_field_dups(PHONES, contact_table, new_contact)
@@ -119,15 +132,29 @@ class ContactList
       headers.each do |header|
         new_contact[header] = contact_table[header].join("\n") if !(new_contact[header])
       end
+      contacts_arry << new_contact
     end
+    contacts_arry
+  end
+
+  def convert_contact_arry_to_csv(contacts_arry)
+    rows = []
+    contacts_arry.each do |contact|
+      field_arry = []
+      headers.each do |header|
+        field_arry << contact[header] || nil
+      end
+      rows << CSV::Row.new(headers, field_arry)
+    end
+    table = CSV::Table.new(rows)
   end
 
   def remove_address_dups(contact_table, new_contact)
-    unique_address_map = get_unique_address_vals(contact_table)
+    addy_map = get_unique_address_vals(contact_table)
     STRUC_ADDRESSES.each do |address, values|
-      addy = unique_address_map.shift
+      addy = addy_map.shift unless (addy_map.nil? || addy_map.empty?)
       values.each do |value|
-        new_contact[value] = addy.shift
+        new_contact[value] = addy.shift unless (addy.nil? || addy.empty?)
       end
     end
   end
