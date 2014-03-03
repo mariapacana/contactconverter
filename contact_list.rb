@@ -19,6 +19,7 @@ class ContactList
   EMAILS = Hash[FIELDS["emails"]["value"].zip(FIELDS["emails"]["type"])]
   WEBSITES = Hash[FIELDS["websites"]["value"].zip(FIELDS["websites"]["type"])]
   PHONES = Hash[FIELDS["phones"]["value"].zip(FIELDS["phones"]["type"])]
+  NAMES = {"Given Name" => "Family Name"}
   ADDRESSES = FIELDS["addresses"]
 
   STRUC_FIELDS = YAML.load(File.open('structured.yaml'))
@@ -50,6 +51,10 @@ class ContactList
     @contacts.headers.size
   end
 
+  def remaining_headers
+    headers - FIELDS["phones"]["type"] - FIELDS["phones"]["value"] - FIELDS["websites"]["type"] - FIELDS["websites"]["value"] - FIELDS["addresses"]["type"]- FIELDS["addresses"]["formatted"]- FIELDS["addresses"]["type"]- FIELDS["addresses"]["street"]- FIELDS["addresses"]["city"]- FIELDS["addresses"]["pobox"]- FIELDS["addresses"]["region"]- FIELDS["addresses"]["postal_code"]- FIELDS["addresses"]["country"]- FIELDS["addresses"]["extended"]- FIELDS["emails"]["type"] - FIELDS["emails"]["value"] - FIELDS["names"]
+  end
+
   def delete_blank_columns
     headers.each do |header|
       if @contacts[header].uniq.size < 3 && header != "Gender"
@@ -67,7 +72,12 @@ class ContactList
   end
 
   def save_to_file(filename)
-    File.open(filename, 'w') {|f| f.write(@contacts.to_s) }
+    CSV.open("contact_duplicates.csv", "wb") do |csv|
+      csv << headers
+      @contacts.each do |row|
+        csv << row
+      end
+    end
   end
 
   def include_columns(field, sub_field)
@@ -100,6 +110,12 @@ class ContactList
     contacts_arry = remove_contact_dups(email_hash)
     table = convert_contact_arry_to_csv(contacts_arry)
 
+    table.each do |contact|
+      Row.remove_duplicates(EMAILS, contact)
+      Row.remove_duplicates(WEBSITES, contact)
+      Row.remove_duplicates(PHONES, contact)
+    end
+
     CSV.open("contact_duplicates.csv", "wb") do |csv|
       csv << headers
       table.each do |row|
@@ -128,9 +144,12 @@ class ContactList
       remove_field_dups(PHONES, contact_table, new_contact)
       remove_field_dups(EMAILS, contact_table, new_contact)
       remove_field_dups(WEBSITES, contact_table, new_contact)
+      remove_field_dups(NAMES, contact_table, new_contact)
+
       remove_address_dups(contact_table, new_contact)
-      headers.each do |header|
-        new_contact[header] = contact_table[header].join("\n") if !(new_contact[header])
+
+      remaining_headers.each do |header|
+        new_contact[header] = contact_table[header].join("\n")
       end
       contacts_arry << new_contact
     end
@@ -175,7 +194,7 @@ class ContactList
         else
           new_arry = new_arry + vals.map {|val| row[val]}
         end
-      end
+     end
       address_hash[type] = new_arry
     end
     address_hash
