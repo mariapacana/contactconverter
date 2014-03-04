@@ -103,16 +103,35 @@ class ContactList
     end
   end
 
+  def remove_sparse_contacts
+    new_contacts = @contacts.select do |contact|
+      enough_info(contact, "Name") && enough_info(contact, "Email 1 - Value")
+    end
+    @contacts = CSV::Table.new(new_contacts)
+  end
+
+  def enough_info(contact, field)
+    contact[field] && !empty(contact[field])
+  end
+
+  def empty(value)
+    value.nil? || value == ""
+  end
+
   def format_non_google_list
     process_phones
     process_fields
+    remove_sparse_contacts
   end
 
-  def generate_contact_duplicates
-    email_hash = make_email_hash
+  def generate_email_duplicates
+    first_email = FIELDS["emails"]["value"][0]
+
+    email_hash = make_frequency_hash(first_email)
     email_hash = pull_out_duplicates(email_hash)
+
     strip_duplicate_entries(email_hash)
-    save_to_file("icloud_formatted.csv")
+    save_to_file("icloud_no_email_dups.csv")
 
     contacts_arry = remove_contact_dups(email_hash)
     table = convert_contact_arry_to_csv(contacts_arry)
@@ -123,7 +142,7 @@ class ContactList
       Row.remove_duplicates(PHONES, contact)
     end
 
-    CSV.open("icloud_duplicates.csv", "wb") do |csv|
+    CSV.open("icloud_email_duplicates.csv", "wb") do |csv|
       csv << headers
       table.each do |row|
         csv << row
@@ -131,22 +150,45 @@ class ContactList
     end
   end
 
-  def make_email_hash
-    email_hash = {}
-    @contacts.each do |contact|
-      first_email = contact[FIELDS["emails"]["value"][0]]
-      if !(email_hash[first_email].nil?)
-        email_hash[first_email] = email_hash[first_email] << contact
-      else
-        email_hash[first_email] = CSV::Table.new([contact])
+  def generate_name_duplicates
+    name_hash = make_frequency_hash("Name")
+    name_hash = pull_out_duplicates(name_hash)
+
+    strip_duplicate_entries(name_hash)
+    save_to_file("icloud_no_name_dups.csv")
+
+    contacts_arry = remove_contact_dups(name_hash)
+    table = convert_contact_arry_to_csv(contacts_arry)
+
+    table.each do |contact|
+      Row.remove_duplicates(EMAILS, contact)
+      Row.remove_duplicates(WEBSITES, contact)
+      Row.remove_duplicates(PHONES, contact)
+    end
+
+    CSV.open("icloud_name_duplicates.csv", "wb") do |csv|
+      csv << headers
+      table.each do |row|
+        csv << row
       end
     end
-    email_hash
   end
 
-  def pull_out_duplicates(email_hash)
-    email_hash.select do |email, contact|
-      contact.size > 1 && !email.nil? && !email.empty? && given_names_start_with_same_chars(contact)
+  def make_frequency_hash(field)
+    field_hash = {}
+    @contacts.each do |contact|
+      if !(field_hash[contact[field]].nil?)
+        field_hash[contact[field]] = field_hash[contact[field]] << contact
+      else
+        field_hash[contact[field]] = CSV::Table.new([contact])
+      end
+    end
+    field_hash
+  end
+
+  def pull_out_duplicates(field_hash)
+    field_hash.select do |field, contact|
+      contact.size > 1 && !field.nil? && !field.empty? && given_names_start_with_same_chars(contact)
     end
   end
 
