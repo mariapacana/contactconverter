@@ -19,7 +19,7 @@ class ContactList
   EMAILS = Hash[FIELDS["emails"]["value"].zip(FIELDS["emails"]["type"])]
   WEBSITES = Hash[FIELDS["websites"]["value"].zip(FIELDS["websites"]["type"])]
   PHONES = Hash[FIELDS["phones"]["value"].zip(FIELDS["phones"]["type"])]
-  NAMES = {"Given Name" => "Family Name"}
+  NAMES = FIELDS["names"]
   ADDRESSES = FIELDS["addresses"]
 
   STRUC_FIELDS = YAML.load(File.open('structured.yaml'))
@@ -72,7 +72,7 @@ class ContactList
   end
 
   def save_to_file(filename)
-    CSV.open("contact_duplicates.csv", "wb") do |csv|
+    CSV.open(filename, "wb") do |csv|
       csv << headers
       @contacts.each do |row|
         csv << row
@@ -107,6 +107,10 @@ class ContactList
 
   def generate_contact_duplicates
     email_hash = make_email_hash
+    email_hash = pull_out_duplicates(email_hash)
+    strip_duplicate_entries(email_hash)
+    save_to_file("icloud_formatted.csv")
+
     contacts_arry = remove_contact_dups(email_hash)
     table = convert_contact_arry_to_csv(contacts_arry)
 
@@ -116,7 +120,7 @@ class ContactList
       Row.remove_duplicates(PHONES, contact)
     end
 
-    CSV.open("contact_duplicates.csv", "wb") do |csv|
+    CSV.open("icloud_duplicates.csv", "wb") do |csv|
       csv << headers
       table.each do |row|
         csv << row
@@ -134,7 +138,41 @@ class ContactList
         email_hash[first_email] = CSV::Table.new([contact])
       end
     end
-    email_hash.select! {|email, contact| contact.size > 1 && !email.nil? && !email.empty? }
+    email_hash
+  end
+
+  def pull_out_duplicates(email_hash)
+    email_hash.select do |email, contact|
+      contact.size > 1 && !email.nil? && !email.empty? && given_names_start_with_same_chars(contact)
+    end
+  end
+
+  def given_name_same_as_family(contact)
+    !(contact["Given Name"] & contact["Family Name"]).empty?
+  end
+
+  ## SOMETHING IS WRONG HERE
+  def given_names_start_with_same_chars(contact)
+    names = contact["Given Name"].map do |name|
+      name[0..1]
+    end.uniq
+    one_name_or_empty(names) || only_one_name(names)
+  end
+
+  def only_one_name(names)
+    names.select {|name| name != "" && !name.nil? }.size == 1
+  end
+
+  def one_name_or_empty(names)
+    names.size == 1
+  end
+
+  def strip_duplicate_entries(email_hash)
+    ids = email_hash.values.map {|c| c["IC - id"]}.flatten
+    new_contacts = @contacts.select do |contact|
+      !(ids.include?(contact["IC - id"]))
+    end
+    @contacts = CSV::Table.new(new_contacts)
   end
 
   def remove_contact_dups(email_hash)
@@ -144,12 +182,12 @@ class ContactList
       remove_field_dups(PHONES, contact_table, new_contact)
       remove_field_dups(EMAILS, contact_table, new_contact)
       remove_field_dups(WEBSITES, contact_table, new_contact)
-      remove_field_dups(NAMES, contact_table, new_contact)
 
+      remove_name_dups(contact_table, new_contact)
       remove_address_dups(contact_table, new_contact)
 
       remaining_headers.each do |header|
-        new_contact[header] = contact_table[header].join("\n")
+        new_contact[header] = contact_table[header].uniq.join("\n")
       end
       contacts_arry << new_contact
     end
@@ -182,6 +220,16 @@ class ContactList
     address_hash = get_address_hash(contact_table)
     address_map = address_mapping(address_hash)
     address_map = get_unique_addresses(address_map)
+  end
+
+  def remove_name_dups(contact_table, new_contact)
+    name_hash = {}
+    NAMES.each do |name_type|
+      name_hash[name_type] = contact_table[name_type].uniq
+    end
+    NAMES.each do |name_type|
+      new_contact[name_type] = name_hash[name_type].join("\n")
+    end
   end
 
   def get_address_hash(contact_table)
@@ -227,7 +275,7 @@ class ContactList
       contact[val].zip(contact[type]).select do |a| 
         !((a[0].nil? || a[0].empty?) && (a[1].nil? || a[1].empty?))
       end
-    end.reduce(:+)
+    end.reduce(:+).uniq
   end
 
   def assign_values(val_type_hash, unique_values, new_contact)
