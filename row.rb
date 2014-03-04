@@ -1,5 +1,18 @@
 module Row
 
+  def self.move_contact_name(contact)
+    if contact["Family Name"] && (contact["Given Name"].nil? || contact["Given Name"] == "")
+      contact["Given Name"] = contact["Family Name"]
+      contact["Family Name"] = ""
+    end
+  end
+
+  def self.make_name(contact)
+    if !(contact["Name"]) || (contact["Name"] == "") || (contact["Name"].nil?)
+      contact["Name"] = "#{contact["Given Name"]} #{contact["Family Name"]}"
+    end
+  end
+
   def self.remove_duplicates(val_type_hash, contact)
     contact_val_types = Row.aggregate_contact_field(val_type_hash, contact)
     unique_values = Row.unique_values(contact_val_types)

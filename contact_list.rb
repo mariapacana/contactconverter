@@ -93,10 +93,13 @@ class ContactList
   end
 
   def process_fields
+    @contacts["Name"] = nil
     @contacts.each do |contact|
       Row.remove_duplicates(EMAILS, contact)
       Row.remove_duplicates(WEBSITES, contact)
       Row.remove_duplicates(PHONES, contact)
+      Row.move_contact_name(contact)
+      Row.make_name(contact)
     end
   end
 
@@ -151,7 +154,6 @@ class ContactList
     !(contact["Given Name"] & contact["Family Name"]).empty?
   end
 
-  ## SOMETHING IS WRONG HERE
   def given_names_start_with_same_chars(contact)
     names = contact["Given Name"].map do |name|
       name[0..1]
