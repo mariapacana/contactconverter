@@ -105,7 +105,7 @@ class ContactList
 
   def remove_sparse_contacts
     new_contacts = @contacts.select do |contact|
-      enough_info(contact, "Name") && enough_info(contact, "Email 1 - Value")
+      enough_info(contact, "Name") && (enough_info(contact, "Email 1 - Value") || enough_info(contact, "Phone 1 - Value"))
     end
     @contacts = CSV::Table.new(new_contacts)
   end
