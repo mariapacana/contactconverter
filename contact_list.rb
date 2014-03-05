@@ -21,6 +21,7 @@ class ContactList
   PHONES = Hash[FIELDS["phones"]["value"].zip(FIELDS["phones"]["type"])]
   NAMES = FIELDS["names"]
   ADDRESSES = FIELDS["addresses"]
+  FIRST_EMAIL = FIELDS["emails"]["value"][0]
 
   STRUC_FIELDS = YAML.load(File.open('structured.yaml'))
   STRUC_ADDRESSES = STRUC_FIELDS["addresses"]
@@ -124,53 +125,27 @@ class ContactList
     remove_sparse_contacts
   end
 
-  def generate_email_duplicates
-    first_email = FIELDS["emails"]["value"][0]
+  def generate_duplicates(field)
+    field_hash = make_frequency_hash(field)
+    field_hash = pull_out_duplicates(field, field_hash)
+    strip_duplicate_entries(field_hash)
+    save_to_file("icloud_no_#{field}_dups.csv")
 
-    email_hash = make_frequency_hash(first_email)
-    email_hash = pull_out_duplicates(email_hash)
-
-    strip_duplicate_entries(email_hash)
-    save_to_file("icloud_no_email_dups.csv")
-
-    contacts_arry = remove_contact_dups(email_hash)
+    contacts_arry = remove_contact_dups(field_hash)
     table = convert_contact_arry_to_csv(contacts_arry)
+    reprocess_row_dups(table)
 
-    table.each do |contact|
-      Row.remove_duplicates(EMAILS, contact)
-      Row.remove_duplicates(WEBSITES, contact)
-      Row.remove_duplicates(PHONES, contact)
-    end
-
-    CSV.open("icloud_email_duplicates.csv", "wb") do |csv|
+    CSV.open("icloud_#{field}_duplicates.csv", "wb") do |csv|
       csv << headers
-      table.each do |row|
-        csv << row
-      end
+      table.each { |row| csv << row }
     end
   end
 
-  def generate_name_duplicates
-    name_hash = make_frequency_hash("Name")
-    name_hash = pull_out_duplicates(name_hash)
-
-    strip_duplicate_entries(name_hash)
-    save_to_file("icloud_no_name_dups.csv")
-
-    contacts_arry = remove_contact_dups(name_hash)
-    table = convert_contact_arry_to_csv(contacts_arry)
-
-    table.each do |contact|
+  def reprocess_row_dups(contact_table)
+    contact_table.each do |contact|
       Row.remove_duplicates(EMAILS, contact)
       Row.remove_duplicates(WEBSITES, contact)
       Row.remove_duplicates(PHONES, contact)
-    end
-
-    CSV.open("icloud_name_duplicates.csv", "wb") do |csv|
-      csv << headers
-      table.each do |row|
-        csv << row
-      end
     end
   end
 
@@ -186,29 +161,31 @@ class ContactList
     field_hash
   end
 
-  def pull_out_duplicates(field_hash)
+  def pull_out_duplicates(field, field_hash)
+    if field == FIRST_EMAIL
+      comparison_field = "Name"
+    elsif field == "Name"
+      comparison_field = FIRST_EMAIL
+    end 
+
     field_hash.select do |field, contact|
-      contact.size > 1 && !field.nil? && !field.empty? && given_names_start_with_same_chars(contact)
+      contact.size > 1 && !field.nil? && !field.empty? && vals_substantially_similar(comparison_field, contact) &&vals_substantially_similar("Phone 1 - Value", contact)
     end
   end
 
-  def given_name_same_as_family(contact)
-    !(contact["Given Name"] & contact["Family Name"]).empty?
-  end
-
-  def given_names_start_with_same_chars(contact)
-    names = contact["Given Name"].map do |name|
-      name[0..1]
+  def vals_substantially_similar(field, contact)
+    vals = contact[field].map do |val|
+      val.nil? ? nil : val[0..1]
     end.uniq
-    one_name_or_empty(names) || only_one_name(names)
+    one_val_or_empty(vals) || only_one_val(vals)
   end
 
-  def only_one_name(names)
-    names.select {|name| name != "" && !name.nil? }.size == 1
+  def only_one_val(vals)
+    vals.select {|val| val != "" && !val.nil? }.size == 1
   end
 
-  def one_name_or_empty(names)
-    names.size == 1
+  def one_val_or_empty(vals)
+    vals.size == 1
   end
 
   def strip_duplicate_entries(email_hash)
@@ -217,6 +194,10 @@ class ContactList
       !(ids.include?(contact["IC - id"]))
     end
     @contacts = CSV::Table.new(new_contacts)
+  end
+
+  def given_name_same_as_family(contact)
+    !(contact["Given Name"] & contact["Family Name"]).empty?
   end
 
   def remove_contact_dups(email_hash)
