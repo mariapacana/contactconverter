@@ -47,16 +47,20 @@ class ContactList
 
   def headers_in_order
     new_contacts = []
+
+    non_goog_headers = @contacts.headers - G_HEADERS
+    new_headers = G_HEADERS - ["Notes"] + non_goog_headers + ["Notes"]
+
     @contacts.each do |contact|
       fields = []
-      G_HEADERS.each do |header|
+      new_headers.each do |header|
         if contact[header] && !empty(contact[header])
           fields << contact[header]
         else
           fields << nil
         end
       end
-      new_contacts << CSV::Row.new(G_HEADERS, fields)
+      new_contacts << CSV::Row.new(new_headers, fields)
     end
     @contacts = CSV::Table.new(new_contacts)
   end
@@ -147,14 +151,21 @@ class ContactList
     field_hash = make_frequency_hash(field)
     field_hash = pull_out_duplicates(field, field_hash)
     strip_duplicate_entries(field_hash)
+    delete_blank_columns
     save_to_file("icloud_no_#{field}_dups.csv")
 
     contacts_arry = remove_contact_dups(field_hash)
     table = convert_contact_arry_to_csv(contacts_arry)
     reprocess_row_dups(table)
 
+    table.headers.each do |header|
+      if table[header].uniq.size < 3 && header != "Gender"
+        table.delete(header)
+      end
+    end
+
     CSV.open("icloud_#{field}_duplicates.csv", "wb") do |csv|
-      csv << headers
+      csv << table.headers
       table.each { |row| csv << row }
     end
   end
@@ -180,15 +191,26 @@ class ContactList
   end
 
   def pull_out_duplicates(field, field_hash)
-    if field == FIRST_EMAIL
+    if field == FIRST_EMAIL || field == "Phone 1 - Value"
       comparison_field = "Name"
     elsif field == "Name"
       comparison_field = FIRST_EMAIL
     end 
-
-    field_hash.select do |field, contact|
-      contact.size > 1 && !field.nil? && !field.empty? && vals_substantially_similar(comparison_field, contact)
+    field_hash.select do |field_val, contact|
+      contact.size > 1 && !field_val.nil? && !field_val.empty? && contact_tests(field, comparison_field, contact)
     end
+  end
+
+  def contact_tests(field, comparison_field, contact)
+    if field == "Name"
+      return name_test(field, contact) || vals_substantially_similar(comparison_field, contact)
+    elsif field == FIRST_EMAIL || field == "Phone 1 - Value"
+      return vals_substantially_similar(comparison_field, contact)
+    end
+  end
+
+  def name_test(field, contact)
+    !(empty(contact["Given Name"].uniq[0])) && !(empty(contact["Family Name"].uniq[0]))
   end
 
   def vals_substantially_similar(field, contact)
