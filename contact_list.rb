@@ -15,7 +15,8 @@ class ContactList
   include Row
   include Column
 
-  FIELDS = YAML.load(File.open('google.yaml'))
+  G_HEADERS = YAML.load(File.open('google.yaml'))
+  FIELDS = YAML.load(File.open('google_by_category.yaml'))
   EMAILS = Hash[FIELDS["emails"]["value"].zip(FIELDS["emails"]["type"])]
   WEBSITES = Hash[FIELDS["websites"]["value"].zip(FIELDS["websites"]["type"])]
   PHONES = Hash[FIELDS["phones"]["value"].zip(FIELDS["phones"]["type"])]
@@ -42,6 +43,22 @@ class ContactList
                                 header_converters: change_headers)
     end
 
+  end
+
+  def headers_in_order
+    new_contacts = []
+    @contacts.each do |contact|
+      fields = []
+      G_HEADERS.each do |header|
+        if contact[header] && !empty(contact[header])
+          fields << contact[header]
+        else
+          fields << nil
+        end
+      end
+      new_contacts << CSV::Row.new(G_HEADERS, fields)
+    end
+    @contacts = CSV::Table.new(new_contacts)
   end
 
   def headers
@@ -120,6 +137,7 @@ class ContactList
   end
 
   def format_non_google_list
+    headers_in_order
     process_phones
     process_fields
     remove_sparse_contacts
@@ -169,7 +187,7 @@ class ContactList
     end 
 
     field_hash.select do |field, contact|
-      contact.size > 1 && !field.nil? && !field.empty? && vals_substantially_similar(comparison_field, contact) &&vals_substantially_similar("Phone 1 - Value", contact)
+      contact.size > 1 && !field.nil? && !field.empty? && vals_substantially_similar(comparison_field, contact)
     end
   end
 
