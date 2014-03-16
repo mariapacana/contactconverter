@@ -1,6 +1,7 @@
 require 'csv'
 require 'yaml'
 require 'pry'
+require 'rspec'
 
 require File.expand_path('../phone.rb', __FILE__)
 require File.expand_path('../row.rb', __FILE__)
@@ -43,6 +44,7 @@ class ContactList
                                 header_converters: change_headers)
     end
 
+    headers_in_order
   end
 
   def headers_in_order
@@ -85,14 +87,6 @@ class ContactList
     end
   end
 
-  def flag_sparse_columns
-    headers.each do |header|
-      if @contacts[header].uniq.size < 20
-        puts "header: #{header}, values: #{@contacts[header].uniq }"
-      end
-    end
-  end
-
   def save_to_file(filename)
     CSV.open(filename, "wb") do |csv|
       csv << headers
@@ -102,21 +96,10 @@ class ContactList
     end
   end
 
-  def include_columns(field, sub_field)
-    FIELDS[field][sub_field].each { |col| @contacts[col] = nil }
-  end
-
-  def process_phones
-    include_columns("phones", "type")
-    @contacts.each do |contact|
-      Phone.get_phone_types(contact) if @not_google
-      Phone.standardize_phones(contact, FIELDS["phones"]["value"])
-    end
-  end
-
   def process_fields
-    @contacts["Name"] = nil
     @contacts.each do |contact|
+      Row.get_phone_types(contact) if @not_google
+      Row.standardize_phones(contact, FIELDS["phones"]["value"])
       Row.remove_duplicates(EMAILS, contact)
       Row.remove_duplicates(WEBSITES, contact)
       Row.remove_duplicates(PHONES, contact)
@@ -127,7 +110,7 @@ class ContactList
 
   def remove_sparse_contacts
     new_contacts = @contacts.select do |contact|
-      enough_info(contact, "Name") && (enough_info(contact, "Email 1 - Value") || enough_info(contact, "Phone 1 - Value"))
+      enough_info(contact, "Name") && (enough_info(contact, "E-mail 1 - Value") || enough_info(contact, "Phone 1 - Value"))
     end
     @contacts = CSV::Table.new(new_contacts)
   end
@@ -141,7 +124,6 @@ class ContactList
   end
 
   def format_non_google_list
-    headers_in_order
     process_phones
     process_fields
     remove_sparse_contacts
