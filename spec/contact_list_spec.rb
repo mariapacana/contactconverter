@@ -21,17 +21,10 @@ describe ContactList do
     end
   end
 
-  describe "#remove_sparse_contacts" do
+  describe "#format_list" do
     it "should remove contacts without info" do
-      icloud.remove_sparse_contacts
+      icloud.format_list
       icloud.contacts["IC - id"]. should_not include("pas-id-53095B97000023B7")
-    end
-  end
-
-  describe "#process_fields" do
-    it "should standardize phone numbers" do
-      icloud.process_fields
-      icloud.save_to_file("formattedicloud.csv")
     end
   end
 

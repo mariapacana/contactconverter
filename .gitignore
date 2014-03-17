@@ -1,3 +1,5 @@
 *.txt
 *.vcf
 *.csv
+*.csv#
+*.zip

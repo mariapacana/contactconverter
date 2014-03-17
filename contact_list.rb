@@ -3,18 +3,16 @@ require 'yaml'
 require 'pry'
 require 'rspec'
 
-require File.expand_path('../phone.rb', __FILE__)
+require File.expand_path('../util.rb', __FILE__)
 require File.expand_path('../row.rb', __FILE__)
-require File.expand_path('../column.rb', __FILE__)
 
 class ContactList
 
   attr_accessor :contacts, :config
   attr_reader :not_google
 
-  include Phone
+  include Util
   include Row
-  include Column
 
   G_HEADERS = YAML.load(File.open('google.yaml'))
   FIELDS = YAML.load(File.open('google_by_category.yaml'))
@@ -56,7 +54,7 @@ class ContactList
     @contacts.each do |contact|
       fields = []
       new_headers.each do |header|
-        if contact[header] && !empty(contact[header])
+        if contact[header] && !Util.nil_or_empty?(contact[header])
           fields << contact[header]
         else
           fields << nil
@@ -96,35 +94,7 @@ class ContactList
     end
   end
 
-  def process_fields
-    @contacts.each do |contact|
-      Row.get_phone_types(contact) if @not_google
-      Row.standardize_phones(contact, FIELDS["phones"]["value"])
-      Row.remove_duplicates(EMAILS, contact)
-      Row.remove_duplicates(WEBSITES, contact)
-      Row.remove_duplicates(PHONES, contact)
-      Row.move_contact_name(contact)
-      Row.make_name(contact)
-    end
-  end
-
-  def remove_sparse_contacts
-    new_contacts = @contacts.select do |contact|
-      enough_info(contact, "Name") && (enough_info(contact, "E-mail 1 - Value") || enough_info(contact, "Phone 1 - Value"))
-    end
-    @contacts = CSV::Table.new(new_contacts)
-  end
-
-  def enough_info(contact, field)
-    contact[field] && !empty(contact[field])
-  end
-
-  def empty(value)
-    value.nil? || value == ""
-  end
-
-  def format_non_google_list
-    process_phones
+  def format_list
     process_fields
     remove_sparse_contacts
   end
@@ -179,7 +149,7 @@ class ContactList
       comparison_field = FIRST_EMAIL
     end 
     field_hash.select do |field_val, contact|
-      contact.size > 1 && !field_val.nil? && !field_val.empty? && contact_tests(field, comparison_field, contact)
+      contact.size > 1 && !Util.nil_or_empty?(field_val) && contact_tests(field, comparison_field, contact)
     end
   end
 
@@ -192,7 +162,7 @@ class ContactList
   end
 
   def name_test(field, contact)
-    !(empty(contact["Given Name"].uniq[0])) && !(empty(contact["Family Name"].uniq[0]))
+    !(Util.nil_or_empty?(contact["Given Name"].uniq[0])) && !(Util.nil_or_empty?(contact["Family Name"].uniq[0]))
   end
 
   def vals_substantially_similar(field, contact)
@@ -256,9 +226,9 @@ class ContactList
   def remove_address_dups(contact_table, new_contact)
     addy_map = get_unique_address_vals(contact_table)
     STRUC_ADDRESSES.each do |address, values|
-      addy = addy_map.shift unless (addy_map.nil? || addy_map.empty?)
+      addy = addy_map.shift unless Util.nil_or_empty?(addy_map)
       values.each do |value|
-        new_contact[value] = addy.shift unless (addy.nil? || addy.empty?)
+        new_contact[value] = addy.shift unless Util.nil_or_empty?(addy)
       end
     end
   end
@@ -320,7 +290,7 @@ class ContactList
   def get_unique_field_vals(val_type_hash, contact)
     val_type_hash.map do |val, type|
       contact[val].zip(contact[type]).select do |a| 
-        !((a[0].nil? || a[0].empty?) && (a[1].nil? || a[1].empty?))
+        !(Util.nil_or_empty?(a[0]) && Util.nil_or_empty?(a[1]))
       end
     end.reduce(:+).uniq
   end
@@ -344,12 +314,30 @@ class ContactList
     assign_values(val_type_hash, unique_values, new_contact)
   end
 
+  private
+    def process_fields
+      @contacts.each do |contact|
+        Row.get_phone_types(contact) if @not_google
+        Row.standardize_phones(contact, FIELDS["phones"]["value"])
+        Row.remove_duplicates(EMAILS, contact)
+        Row.remove_duplicates(WEBSITES, contact)
+        Row.remove_duplicates(PHONES, contact)
+        Row.delete_invalid_names(contact)
+        Row.move_contact_name(contact)
+        Row.make_name(contact)
+      end
+    end
+
+    def remove_sparse_contacts
+      new_contacts = @contacts.select {|c| Row.enough_contact_info(c) }
+      @contacts = CSV::Table.new(new_contacts)
+    end
 end
 
 class CSV::Row
 
   def has_field?(header)
-    ! (field(header).nil? || field(header).empty?)
+    ! Util.nil_or_empty?(field(header)) 
   end
 
 end

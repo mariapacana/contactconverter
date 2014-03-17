@@ -1,4 +1,8 @@
+require File.expand_path('../util.rb', __FILE__)
+
 module Row
+
+  include Util
 
   def self.get_phone_types(person)
     person['Phone 2 - Type'] = 'mobile' if person.has_field?('Phone 2 - Value')
@@ -6,13 +10,15 @@ module Row
     person['Phone 4 - Type'] = 'pager' if person.has_field?('Phone 4 - Value')
     person['Phone 5 - Type'] = 'fax' if person.has_field?('Phone 5 - Value')
 
-    if person['Phone 1 - Value'] == person['Phone 2 - Value']
-      person['Phone 1 - Type'] = 'mobile'
-    elsif person['Phone 1 - Value'] == person['Phone 3 - Value']
-      person['Phone 1 - Type'] = 'home'
-    elsif person['Phone 1 - Value'] == person['Phone 4 - Value']
-      person['Phone 1 - Type'] = 'pager'
-    end 
+    if !Util.nil_or_empty?(person['Phone 1 - Value'])
+      if person['Phone 1 - Value'] == person['Phone 2 - Value']
+        person['Phone 1 - Type'] = 'mobile'
+      elsif person['Phone 1 - Value'] == person['Phone 3 - Value']
+        person['Phone 1 - Type'] = 'home'
+      elsif person['Phone 1 - Value'] == person['Phone 4 - Value']
+        person['Phone 1 - Type'] = 'pager'
+      end
+    end
   end
 
   def self.standardize_phones(person, fields)
@@ -30,15 +36,32 @@ module Row
     end
   end
 
+  def self.delete_invalid_names(contact)
+    ["Given Name", "Family Name"].each do |f|
+      Row.delete_if_invalid_name(contact, f)
+    end
+  end
+
+  def self.delete_if_invalid_name(contact, name_field)
+    if !Util.nil_or_empty?(contact[name_field])
+      if contact[name_field].match(/\d/)
+        contact[name_field] = ""
+      elsif contact[name_field].match(/.*@.*\..*/)
+        contact["E-mail 1 - Value"] = contact[name_field] if Util.nil_or_empty?(contact["E-mail 1 - Value"])
+        contact[name_field] = ""
+      end
+    end
+  end
+
   def self.move_contact_name(contact)
-    if contact["Family Name"] && (contact["Given Name"].nil? || contact["Given Name"] == "")
+    if contact["Family Name"] && Util.nil_or_empty?(contact["Given Name"])
       contact["Given Name"] = contact["Family Name"]
       contact["Family Name"] = ""
     end
   end
 
   def self.make_name(contact)
-    if !(contact["Name"]) || (contact["Name"] == "") || (contact["Name"].nil?)
+    if !(contact["Name"]) || Util.nil_or_empty?(contact["Name"])
       contact["Name"] = "#{contact["Given Name"]} #{contact["Family Name"]}"
     end
   end
@@ -77,4 +100,9 @@ module Row
       end
     end
   end
+
+  def self.enough_contact_info(contact)
+    !Util.nil_or_empty?(contact["Name"]) && (!Util.nil_or_empty?(contact["E-mail 1 - Value"]) || !Util.nil_or_empty?(contact["Phone 1 - Value"]))
+  end
+
 end

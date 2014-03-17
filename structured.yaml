@@ -1,0 +1,106 @@
+emails:
+  email_1: 
+  - "Email 1 - Type"
+  - "Email 1 - Value"
+  email_2: 
+  - "Email 2 - Type"
+  - "Email 2 - Value"
+  email_3: 
+  - "Email 3 - Type"
+  - "Email 3 - Value"
+  email_4: 
+  - "Email 4 - Type"
+  - "Email 4 - Value"
+phones:
+  phone_1: 
+  - "Phone 1 - Type"
+  - "Phone 1 - Value"
+  phone_2: 
+  - "Phone 2 - Type"
+  - "Phone 2 - Value"
+  phone_3: 
+  - "Phone 3 - Type"
+  - "Phone 3 - Value"
+  phone_4: 
+  - "Phone 4 - Type"
+  - "Phone 4 - Value"
+  phone_5: 
+  - "Phone 5 - Type"
+  - "Phone 5 - Value"
+addresses:
+  address_1: 
+  - "Address 1 - Type"
+  - "Address 1 - Formatted"
+  - "Address 1 - Street"
+  - "Address 1 - State"
+  - "Address 1 - PO Box"
+  - "Address 1 - Region"
+  - "Address 1 - Postal Code"
+  - "Address 1 - Country"
+  - "Address 1 - Extended Address"
+  address_2:
+  - "Address 2 - Type"
+  - "Address 2 - Formatted"
+  - "Address 2 - Street"
+  - "Address 2 - State"
+  - "Address 2 - PO Box"
+  - "Address 2 - Region"
+  - "Address 2 - Postal Code"
+  - "Address 2 - Country"
+  - "Address 2 - Extended Address"
+  address_3:
+  - "Address 3 - Type"
+  - "Address 3 - Formatted"
+  - "Address 3 - Street"
+  - "Address 3 - State"
+  - "Address 3 - PO Box"
+  - "Address 3 - Region"
+  - "Address 3 - Postal Code"
+  - "Address 3 - Country"
+  - "Address 3 - Extended Address"
+websites:
+  website_1: 
+  - "Website 1 - Type"
+  - "Website 1 - Value"
+  website_2: 
+  - "Website 2 - Type"
+  - "Website 2 - Value"
+  website_3: 
+  - "Website 3 - Type"
+  - "Website 3 - Value"
+  website_4: 
+  - "Website 4 - Type"
+  - "Website 4 - Value"
+  website_5: 
+  - "Website 5 - Type"
+  - "Website 5 - Value"
+  website_6: 
+  - "Website 6 - Type"
+  - "Website 6 - Value"
+  website_7: 
+  - "Website 7 - Type"
+  - "Website 7 - Value"
+  website_8: 
+  - "Website 8 - Type"
+  - "Website 8 - Value"
+  website_9: 
+  - "Website 9 - Type"
+  - "Website 9 - Value"
+  website_10: 
+  - "Website 10 - Type"
+  - "Website 10 - Value"
+  website_11: 
+  - "Website 11 - Type"
+  - "Website 11 - Value"
+  website_12: 
+  - "Website 12 - Type"
+  - "Website 12 - Value"
+  website_13: 
+  - "Website 13 - Type"
+  - "Website 13 - Value"
+  website_14: 
+  - "Website 14 - Type"
+  - "Website 14 - Value"
+  website_15: 
+  - "Website 15 - Type"
+  - "Website 15 - Value"
