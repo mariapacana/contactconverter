@@ -2,16 +2,11 @@ require 'rspec'
 require 'yaml'
 
 require_relative '../row'
+require_relative '../constants'
+
+include Constants
 
 describe Row do
-
-  FIELDS = YAML.load(File.open(File.expand_path("../../google_by_category.yaml", __FILE__)))
-  EMAILS = Hash[FIELDS["emails"]["value"].zip(FIELDS["emails"]["type"])]
-  WEBSITES = Hash[FIELDS["websites"]["value"].zip(FIELDS["websites"]["type"])]
-  PHONES = Hash[FIELDS["phones"]["value"].zip(FIELDS["phones"]["type"])]
-  NAMES = FIELDS["names"]
-  ADDRESSES = FIELDS["addresses"]
-  FIRST_EMAIL = FIELDS["emails"]["value"][0]
 
   let (:phone_headers) {FIELDS["phones"]["value"].zip(FIELDS["phones"]["type"]).flatten}
   let (:contact_1) {CSV::Row.new(phone_headers, ["(312) 838-3923", nil, "(312) 838-3923", nil, "(312) 838-3443", nil,"(312) 234-3237", nil,"(312) 658-3923", nil,])}
