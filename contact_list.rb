@@ -6,6 +6,7 @@ require 'rspec'
 require_relative 'util'
 require_relative 'row'
 require_relative 'constants'
+require_relative 'header'
 
 class ContactList
 
@@ -15,56 +16,26 @@ class ContactList
   include Util
   include Row
   include Constants
+  include Header
 
   def initialize(args)
-
-    change_headers = lambda do |header|
-      header = @config[header].nil? ? header : @config[header]
-    end
-
     if args[:config_file].nil?
       @contacts = CSV.read(args[:source_file], headers: true)
     else
+      change_headers = lambda do |header|
+        header = @config[header].nil? ? header : @config[header]
+      end
       @not_google = true
       @config = YAML.load(File.open(args[:config_file])) 
       @contacts = CSV.read(args[:source_file], 
                                 headers: true, 
                                 header_converters: change_headers)
+      @contacts = Header.headers_in_order(@contacts)
     end
-
-    headers_in_order
-  end
-
-  def headers_in_order
-    new_contacts = []
-
-    non_goog_headers = @contacts.headers - G_HEADERS
-    new_headers = G_HEADERS - ["Notes"] + non_goog_headers + ["Notes"]
-
-    @contacts.each do |contact|
-      fields = []
-      new_headers.each do |header|
-        if contact[header] && !Util.nil_or_empty?(contact[header])
-          fields << contact[header]
-        else
-          fields << nil
-        end
-      end
-      new_contacts << CSV::Row.new(new_headers, fields)
-    end
-    @contacts = CSV::Table.new(new_contacts)
   end
 
   def headers
     @contacts.headers
-  end
-
-  def num_headers
-    @contacts.headers.size
-  end
-
-  def remaining_headers
-    headers - FIELDS["phones"]["type"] - FIELDS["phones"]["value"] - FIELDS["websites"]["type"] - FIELDS["websites"]["value"] - FIELDS["addresses"]["type"]- FIELDS["addresses"]["formatted"]- FIELDS["addresses"]["type"]- FIELDS["addresses"]["street"]- FIELDS["addresses"]["city"]- FIELDS["addresses"]["pobox"]- FIELDS["addresses"]["region"]- FIELDS["addresses"]["postal_code"]- FIELDS["addresses"]["country"]- FIELDS["addresses"]["extended"]- FIELDS["emails"]["type"] - FIELDS["emails"]["value"] - FIELDS["names"]
   end
 
   def delete_blank_columns
@@ -193,7 +164,7 @@ class ContactList
       remove_name_dups(contact_table, new_contact)
       remove_address_dups(contact_table, new_contact)
 
-      remaining_headers.each do |header|
+      UNIQUE_HEADERS.each do |header|
         new_contact[header] = contact_table[header].uniq.join("\n")
       end
       contacts_arry << new_contact

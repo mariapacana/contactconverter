@@ -10,6 +10,8 @@ describe Row do
 
   let (:phone_headers) {FIELDS["phones"]["value"].zip(FIELDS["phones"]["type"]).flatten}
   let (:contact_1) {CSV::Row.new(phone_headers, ["(312) 838-3923", nil, "(312) 838-3923", nil, "(312) 838-3443", nil,"(312) 234-3237", nil,"(312) 658-3923", nil,])}
+  let (:bad_email) {CSV::Row.new(FIELDS["emails"]["value"], ["'>,Mugwump Gundrun' <Mugwump.Gundrun@'@smtp5.homesteadmail.com", nil, nil, nil])}
+  let (:good_email) {CSV::Row.new(FIELDS["emails"]["value"], ["hey@there.com", "so@what.com", nil, nil])}
 
   describe "#get_phone_types" do
     before(:each) do
@@ -26,11 +28,15 @@ describe Row do
     end
   end
 
-  describe "#standardize_phones" do
+  describe "fixes phones and emails" do
     it "should put phones in format +19995558888" do
       Row.standardize_phones(contact_1, ["Phone 2 - Value", "Phone 3 - Value"])
       contact_1["Phone 2 - Value"].should eq("+13128383923")
       contact_1["Phone 3 - Value"].should eq("+13128383443")
+    end
+    it "can flag emails that aren't blah@blah.com" do
+      Row.invalid_email(bad_email, FIELDS["emails"]["value"]).should eq(true)
+      Row.invalid_email(good_email, FIELDS["emails"]["value"]).should eq(false)
     end
   end
 

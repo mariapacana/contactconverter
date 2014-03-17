@@ -36,6 +36,16 @@ module Row
     end
   end
 
+  def self.invalid_email(person, fields)
+    fields.each do |field|
+      valid_email = /^[^\s"';@()><\\]*@{1}{1}[^\s"';@()><\\]*.[^\s"';@()><\\]*$/
+      if !Util.nil_or_empty?(person[field])
+        return true if !person[field].match(valid_email)
+      end
+    end
+    return false
+  end
+
   def self.delete_invalid_names(contact)
     ["Given Name", "Family Name"].each do |f|
       Row.delete_if_invalid_name(contact, f)

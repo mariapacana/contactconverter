@@ -11,6 +11,8 @@ module Constants
   ADDRESSES = FIELDS["addresses"]
   FIRST_EMAIL = FIELDS["emails"]["value"][0]
 
+  UNIQUE_HEADERS =  G_HEADERS - FIELDS["phones"]["type"] - FIELDS["phones"]["value"] - FIELDS["websites"]["type"] - FIELDS["websites"]["value"] - FIELDS["addresses"]["type"]- FIELDS["addresses"]["formatted"]- FIELDS["addresses"]["type"]- FIELDS["addresses"]["street"]- FIELDS["addresses"]["city"]- FIELDS["addresses"]["pobox"]- FIELDS["addresses"]["region"]- FIELDS["addresses"]["postal_code"]- FIELDS["addresses"]["country"]- FIELDS["addresses"]["extended"]- FIELDS["emails"]["type"] - FIELDS["emails"]["value"] - FIELDS["names"]
+
   STRUC_FIELDS = YAML.load(File.open('structured.yaml'))
   STRUC_ADDRESSES = STRUC_FIELDS["addresses"]
 
