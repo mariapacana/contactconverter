@@ -71,12 +71,13 @@ describe Row do
     end
   end
 
-  describe "removes duplicate info from rows" do
+  describe "removes duplicate email, phone, website info from rows" do
     let(:duplicates) {CSV.read(File.open(File.expand_path("../fixtures/contact_duplicates.csv", __FILE__)), headers: true)}
     let(:email_dups) {duplicates[0]}
     let(:phone_dups) {duplicates[1]}
     let(:website_dups) {duplicates[2]}
     let(:email_dups_no_types) {duplicates[3]}
+    let(:address_dups) {duplicates[4]}
     it "removes duplicate emails" do
       Row.remove_duplicates(EMAILS, email_dups)
       email_dups["E-mail 1 - Value"].should eq("myrtle@wood.com")
@@ -91,6 +92,13 @@ describe Row do
       phone_dups["Phone 1 - Type"].should eq("mobile\nhome")
       phone_dups["Phone 2 - Value"].should eq("+18439992842")
     end
+    it "removes duplicate addresses" do
+      Row.dedup_addresses(address_dups)
+      address_dups["Address 1 - Street"].should eq("1180 Stony Marsh Blvd.")
+      address_dups["Address 2 - Country"].should be_empty
+      address_dups["Address 2 - Postal Code"].should be_empty
+    end
+
   end
 
   # describe "knows when contacts have enough information" do

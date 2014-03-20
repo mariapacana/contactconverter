@@ -87,6 +87,33 @@ module Row
     Row.assign_values(contact, val_type_hash, contact_val_types, unique_values)
   end
 
+  def self.dedup_addresses(contact)
+    address_hash = {}
+    STRUC_ADDRESSES.each do |address, values|
+      contact_values = values.map {|v| contact[v]}
+      address_subfields = []
+      if self.field_not_empty?(contact_values)
+        values.each {|val| address_subfields << contact[val]}
+        address_hash[address] = address_subfields
+      end
+    end
+
+    unique_vals = address_hash.values.uniq
+
+    struc_addys = STRUC_ADDRESSES
+    struc_addys.each do |address, values|
+      addy_info = unique_vals.shift || []
+      values.each do |value|
+       contact[value] = addy_info.shift || ""
+      end
+      struc_addys.delete(address)
+    end
+  end
+
+  def self.field_not_empty?(field_members)
+    field_members.select {|member| !Util.nil_or_empty?(member)}.size >= 1
+  end
+
   # Make a hash containing all data for a particular contact & field.
   def self.aggregate_contact_field(val_type_hash, contact)
     contact_val_types = {}
