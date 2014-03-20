@@ -1,5 +1,6 @@
 require 'rspec'
 require 'yaml'
+require 'csv'
 
 require_relative '../row'
 require_relative '../constants'
@@ -70,39 +71,39 @@ describe Row do
     end
   end
 
-  # describe "removes duplicate info from rows" do
-  #   let(:duplicates) {CSV.read(File.open(File.expand_path("../fixtures/contact_duplicates.csv", __FILE__)), headers: true)}
-  #   let(:email_dups) {duplicates[0]}
-  #   let(:phone_dups) {duplicates[1]}
-  #   let(:website_dups) {duplicates[2]}
-  #   it "removes duplicate emails" do
-  #     Row.remove_duplicates(EMAILS, email_dups)
-  #     email_dups["E-mail 1 - Value"].should eq("myrtle@wood.com")
-  #     email_dups["E-mail 1 - Type"].should eq("business\nhome")
-  #     email_dups["E-mail 2 - Value"].should eq("pacificsunrise@coast.com")
-  #   end
-  #   it "removes duplicate phones" do
-  #     Row.standardize_phones(phone_dups, FIELDS["phones"]["value"])
-  #     Row.remove_duplicates(PHONES, phone_dups)
-  #     phone_dups["Phone 1 - Value"].should eq("+13125835832")
-  #     phone_dups["Phone 1 - Type"].should eq("mobile\nhome")
-  #     phone_dups["Phone 2 - Value"].should eq("+18439992842")
-  #     puts phone_dups
-  #   end
-  # end
-
-
-  describe "knows when contacts have enough information" do
-    let(:has_info) {CSV.read(File.open(File.expand_path("../fixtures/contacts_enough_info.csv", __FILE__)), headers: true)}
-    let(:not_enough_info) {has_info[0]}
-    let(:enough_info_phone) {has_info[1]}
-    let(:enough_info_email) {has_info[2]}
-    it "flags contacts without enough info" do
-      Row.enough_contact_info(not_enough_info).should eq(false)
+  describe "removes duplicate info from rows" do
+    let(:duplicates) {CSV.read(File.open(File.expand_path("../fixtures/contact_duplicates.csv", __FILE__)), headers: true)}
+    let(:email_dups) {duplicates[0]}
+    let(:phone_dups) {duplicates[1]}
+    let(:website_dups) {duplicates[2]}
+    let(:email_dups_no_types) {duplicates[3]}
+    it "removes duplicate emails" do
+      Row.remove_duplicates(EMAILS, email_dups)
+      email_dups["E-mail 1 - Value"].should eq("myrtle@wood.com")
+      email_dups["E-mail 1 - Type"].should eq("home\nbusiness")
+      email_dups["E-mail 2 - Value"].should eq("pacificsunrise@coast.com")
+      email_dups_no_types["E-mail 2 - Value"].should eq("support@suppot.net")
     end
-    it "lets contacts go that do have enough info" do
-      Row.enough_contact_info(enough_info_phone).should eq(true)
-      Row.enough_contact_info(enough_info_email).should eq(true)
+    it "removes duplicate phones" do
+      Row.standardize_phones(phone_dups, FIELDS["phones"]["value"])
+      Row.remove_duplicates(PHONES, phone_dups)
+      phone_dups["Phone 1 - Value"].should eq("+13125835832")
+      phone_dups["Phone 1 - Type"].should eq("mobile\nhome")
+      phone_dups["Phone 2 - Value"].should eq("+18439992842")
     end
   end
+
+  # describe "knows when contacts have enough information" do
+  #   let(:has_info) {CSV.read(File.open(File.expand_path("../fixtures/contacts_enough_info.csv", __FILE__)), headers: true)}
+  #   let(:not_enough_info) {has_info[0]}
+  #   let(:enough_info_phone) {has_info[1]}
+  #   let(:enough_info_email) {has_info[2]}
+  #   it "flags contacts without enough info" do
+  #     Row.enough_contact_info(not_enough_info).should eq(false)
+  #   end
+  #   it "lets contacts go that do have enough info" do
+  #     Row.enough_contact_info(enough_info_phone).should eq(true)
+  #     Row.enough_contact_info(enough_info_email).should eq(true)
+  #   end
+  # end
 end

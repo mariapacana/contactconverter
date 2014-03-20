@@ -1,4 +1,5 @@
 require File.expand_path('../util.rb', __FILE__)
+require 'pry'
 
 module Row
 
@@ -24,7 +25,7 @@ module Row
   def self.standardize_phones(person, fields)
     fields.each do |field|
       phone = person[field]
-      if phone
+      if !Util.nil_or_empty?(phone)
         phone.gsub!(/(\D)/,"")
         if phone.length == 11
           phone.insert(0, '+')
@@ -54,10 +55,10 @@ module Row
 
   def self.delete_if_invalid_name(contact, name_field)
     if !Util.nil_or_empty?(contact[name_field])
-      if contact[name_field].match(/\d/)
-        contact[name_field] = ""
-      elsif contact[name_field].match(/.*@.*\..*/)
+      if contact[name_field].match(/.*@.*\..*/)
         contact["E-mail 1 - Value"] = contact[name_field] if Util.nil_or_empty?(contact["E-mail 1 - Value"])
+        contact[name_field] = ""
+      elsif !contact[name_field].match(/[a-zA-Z]+/)
         contact[name_field] = ""
       end
     end
@@ -72,7 +73,11 @@ module Row
 
   def self.make_name(contact)
     if !(contact["Name"]) || Util.nil_or_empty?(contact["Name"])
-      contact["Name"] = "#{contact["Given Name"]} #{contact["Family Name"]}"
+      if Util.nil_or_empty?(contact["Given Name"]) && Util.nil_or_empty?(contact["Family Name"])
+        contact["Name"] = ""
+      else
+        contact["Name"] = "#{contact["Given Name"]} #{contact["Family Name"]}"
+      end
     end
   end
 
@@ -86,7 +91,11 @@ module Row
   def self.aggregate_contact_field(val_type_hash, contact)
     contact_val_types = {}
     val_type_hash.each do |field_val, field_type|
-      contact_val_types[contact[field_val]] = contact[field_type]
+      if !contact_val_types.has_key?(contact[field_val])
+        contact_val_types[contact[field_val]] = [contact[field_type]]
+      else
+        contact_val_types[contact[field_val]] << contact[field_type]
+      end
     end
     contact_val_types
   end
@@ -103,7 +112,11 @@ module Row
       if !(unique_values.empty?)
         contact_val = unique_values.shift
         contact[field_val] = contact_val
-        contact[field_type] = contact_val_types[contact_val]
+        if contact_val_types[contact_val].size > 1
+          contact[field_type] = contact_val_types[contact_val].select {|t| !Util.nil_or_empty?(t)}.join("\n")
+        else
+          contact[field_type] = contact_val_types[contact_val][0]
+        end
       else
         contact[field_val] = nil
         contact[field_type] = nil
@@ -112,7 +125,15 @@ module Row
   end
 
   def self.enough_contact_info(contact)
-    !Util.nil_or_empty?(contact["Name"]) && (!Util.nil_or_empty?(contact["E-mail 1 - Value"]) || !Util.nil_or_empty?(contact["Phone 1 - Value"]))
+    !Util.nil_or_empty?(contact["E-mail 1 - Value"]) || (!Util.nil_or_empty?(contact["Name"]) || !Util.nil_or_empty?(contact["Phone 1 - Value"]))
+  end
+
+end
+
+class CSV::Row
+
+  def has_field?(header)
+    ! Util.nil_or_empty?(field(header)) 
   end
 
 end

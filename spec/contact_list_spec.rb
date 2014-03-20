@@ -26,9 +26,10 @@ describe ContactList do
   describe "#format_list" do
     it "should remove contacts without info" do
       icloud.format_list
-      icloud.contacts["IC - id"]. should_not include("pas-id-53095B97000023B7")
+      icloud.contacts["IC - id"]. should_not include("pas-id-53095B97000023A3")
+      icloud.contacts["IC - id"]. should include("pas-id-53095B97000023B2")
     end
-    xit "should extract contacts with weird info into another file" do
+    it "should extract contacts with weird info into another file" do
     end
   end
 

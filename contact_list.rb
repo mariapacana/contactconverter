@@ -294,11 +294,3 @@ class ContactList
       @contacts = CSV::Table.new(new_contacts)
     end
 end
-
-class CSV::Row
-
-  def has_field?(header)
-    ! Util.nil_or_empty?(field(header)) 
-  end
-
-end
