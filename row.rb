@@ -81,74 +81,50 @@ module Row
     end
   end
 
-  def self.remove_duplicates(val_type_hash, contact)
-    contact_val_types = Row.aggregate_contact_field(val_type_hash, contact)
-    unique_values = Row.unique_values(contact_val_types)
-    Row.assign_values(contact, val_type_hash, contact_val_types, unique_values)
+  def self.remove_duplicates(struc_fields, contact)
+    hashy = self.get_hash(contact, struc_fields)
+    self.set_fields(struc_fields, hashy, contact)
   end
 
-  def self.dedup_addresses(contact)
-    address_hash = {}
-    STRUC_ADDRESSES.each do |address, values|
-      contact_values = values.map {|v| contact[v]}
-      address_subfields = []
-      if self.field_not_empty?(contact_values)
-        values.each {|val| address_subfields << contact[val]}
-        address_hash[address] = address_subfields
-      end
-    end
+  def self.get_hash(contact, struc_fields)
+    field_hash = {}
 
-    unique_vals = address_hash.values.uniq
+    struc_fields.each do |field, subfields|
+      subfield_type = subfields[0]
+      subvalues = self.value_subfields(contact, subfields)
 
-    struc_addys = STRUC_ADDRESSES
-    struc_addys.each do |address, values|
-      addy_info = unique_vals.shift || []
-      values.each do |value|
-       contact[value] = addy_info.shift || ""
-      end
-      struc_addys.delete(address)
-    end
-  end
-
-  def self.field_not_empty?(field_members)
-    field_members.select {|member| !Util.nil_or_empty?(member)}.size >= 1
-  end
-
-  # Make a hash containing all data for a particular contact & field.
-  def self.aggregate_contact_field(val_type_hash, contact)
-    contact_val_types = {}
-    val_type_hash.each do |field_val, field_type|
-      if !contact_val_types.has_key?(contact[field_val])
-        contact_val_types[contact[field_val]] = [contact[field_type]]
-      else
-        contact_val_types[contact[field_val]] << contact[field_type]
-      end
-    end
-    contact_val_types
-  end
-
-  # Boils it down to unique values
-  def self.unique_values(contact_val_types)
-    contact_val_types.keys.uniq.select do |field_val| 
-      field_val != nil && field_val != ""
-    end
-  end
-
-  def self.assign_values(contact, val_type_hash, contact_val_types, unique_values)
-    val_type_hash.each do |field_val, field_type|
-      if !(unique_values.empty?)
-        contact_val = unique_values.shift
-        contact[field_val] = contact_val
-        if contact_val_types[contact_val].size > 1
-          contact[field_type] = contact_val_types[contact_val].select {|t| !Util.nil_or_empty?(t)}.join("\n")
+      if self.field_not_empty?(subvalues)
+        if !field_hash.has_key?(subvalues)
+          field_hash[subvalues] = [contact[subfield_type]]
         else
-          contact[field_type] = contact_val_types[contact_val][0]
+          field_hash[subvalues] << contact[subfield_type]
         end
-      else
-        contact[field_val] = nil
-        contact[field_type] = nil
       end
     end
+
+    Util.join_hash_values(field_hash)
+  end
+
+  def self.set_fields(struc_fields, field_hash, contact)
+    unique_vals = field_hash.keys.uniq
+    unique_vals.each {|val| val.unshift(field_hash[val]) }
+
+    local_struc_fields = struc_fields.dup
+    local_struc_fields.each do |field, subfields|
+      next_val = unique_vals.shift || []
+      subfields.each do |subfield|
+       contact[subfield] = next_val.shift || ""
+      end
+      local_struc_fields.delete(field)
+    end
+  end
+
+  def self.value_subfields(contact, subfields)
+    subfields[1..-1].map {|val| contact[val]}
+  end
+
+  def self.field_not_empty?(subvalues)
+    subvalues.select {|value| !Util.nil_or_empty?(value)}.size >= 1
   end
 
   def self.enough_contact_info(contact)

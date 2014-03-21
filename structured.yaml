@@ -1,16 +1,16 @@
 emails:
   email_1: 
-  - "Email 1 - Type"
-  - "Email 1 - Value"
+  - "E-mail 1 - Type"
+  - "E-mail 1 - Value"
   email_2: 
-  - "Email 2 - Type"
-  - "Email 2 - Value"
+  - "E-mail 2 - Type"
+  - "E-mail 2 - Value"
   email_3: 
-  - "Email 3 - Type"
-  - "Email 3 - Value"
+  - "E-mail 3 - Type"
+  - "E-mail 3 - Value"
   email_4: 
-  - "Email 4 - Type"
-  - "Email 4 - Value"
+  - "E-mail 4 - Type"
+  - "E-mail 4 - Value"
 phones:
   phone_1: 
   - "Phone 1 - Type"

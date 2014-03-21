@@ -280,9 +280,10 @@ class ContactList
       @contacts.each do |contact|
         Row.get_phone_types(contact) if @not_google
         Row.standardize_phones(contact, FIELDS["phones"]["value"])
-        Row.remove_duplicates(EMAILS, contact)
-        Row.remove_duplicates(WEBSITES, contact)
-        Row.remove_duplicates(PHONES, contact)
+        Row.remove_duplicates(STRUC_EMAILS, contact)
+        Row.remove_duplicates(STRUC_WEBSITES, contact)
+        Row.remove_duplicates(STRUC_PHONES, contact)
+        Row.remove_duplicates(STRUC_ADDRESSES, contact)
         Row.delete_invalid_names(contact)
         Row.move_contact_name(contact)
         Row.make_name(contact)

@@ -2,6 +2,7 @@ require 'rspec'
 
 require_relative '../contact_list'
 require_relative '../constants'
+require_relative '../row'
 
 include Constants
 
@@ -29,7 +30,7 @@ describe ContactList do
       icloud.contacts["IC - id"]. should_not include("pas-id-53095B97000023A3")
       icloud.contacts["IC - id"]. should include("pas-id-53095B97000023B2")
     end
-    it "should extract contacts with weird info into another file" do
+    xit "should extract contacts with weird info into another file" do
     end
   end
 
