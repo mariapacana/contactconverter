@@ -7,6 +7,7 @@ require_relative 'util'
 require_relative 'row'
 require_relative 'constants'
 require_relative 'header'
+require_relative 'contact_csv'
 
 class ContactList
 
@@ -17,6 +18,7 @@ class ContactList
   include Row
   include Constants
   include Header
+  include ContactCSV
 
   def initialize(args)
     if args[:config_file].nil?
@@ -66,63 +68,6 @@ class ContactList
     strip_duplicate_entries(field_hash) #deletes dups from main
     save_to_file("icloud_no_#{field}_dups.csv")
     field_hash
-  end
-
-  def make_frequency_hash(field)
-    field_hash = {}
-    @contacts.each do |contact|
-      if !(field_hash[contact[field]].nil?)
-        field_hash[contact[field]] = field_hash[contact[field]] << contact
-      else
-        field_hash[contact[field]] = CSV::Table.new([contact])
-      end
-    end
-    field_hash
-  end
-
-  def pull_out_duplicates(field, field_hash)
-    field_hash.select do |field_val, contact|
-      contact.size > 1 && !Util.nil_or_empty?(field_val) && contact_tests(field, COMPARISON[field], contact)
-    end
-  end
-
-  def contact_tests(field, comparison_field, contact)
-    if field == "Name"
-      return name_test(field, contact) || vals_substantially_similar(COMPARISON[field], contact)
-    elsif field == FIRST_EMAIL || field == "Phone 1 - Value"
-      return vals_substantially_similar(COMPARISON[field], contact)
-    end
-  end
-
-  def name_test(field, contact)
-    !(Util.nil_or_empty?(contact["Given Name"].uniq[0])) && !(Util.nil_or_empty?(contact["Family Name"].uniq[0]))
-  end
-
-  def vals_substantially_similar(field, contact)
-    vals = contact[field].map do |val|
-      val.nil? ? nil : val[0..1]
-    end.uniq
-    one_val_or_empty(vals) || only_one_val(vals)
-  end
-
-  def only_one_val(vals)
-    vals.select {|val| val != "" && !val.nil? }.size == 1
-  end
-
-  def one_val_or_empty(vals)
-    vals.size == 1
-  end
-
-  def strip_duplicate_entries(email_hash)
-    ids = email_hash.values.map {|c| c["IC - id"]}.flatten
-    new_contacts = @contacts.select do |contact|
-      !(ids.include?(contact["IC - id"]))
-    end
-    @contacts = CSV::Table.new(new_contacts)
-  end
-
-  def given_name_same_as_family(contact)
-    !(contact["Given Name"] & contact["Family Name"]).empty?
   end
 
   def process_duplicate_contacts(field_hash)
@@ -281,6 +226,30 @@ class ContactList
 
     def remove_sparse_contacts
       new_contacts = @contacts.select {|c| Row.enough_contact_info(c) }
+      @contacts = CSV::Table.new(new_contacts)
+    end
+
+    def make_frequency_hash(field)
+      field_hash = {}
+      @contacts.each do |contact|
+        if !(field_hash[contact[field]].nil?)
+          field_hash[contact[field]] = field_hash[contact[field]] << contact
+        else
+          field_hash[contact[field]] = CSV::Table.new([contact])
+        end
+      end
+      field_hash
+    end
+
+    def pull_out_duplicates(field, field_hash)
+      field_hash.select do |field_val, contact|
+        contact.size > 1 && !Util.nil_or_empty?(field_val) && ContactCSV.similarity_tests(field, COMPARISON[field], contact)
+      end
+    end
+
+    def strip_duplicate_entries(field_hash)
+      ids = field_hash.values.map {|c| c["IC - id"]}.flatten
+      new_contacts = @contacts.select {|c| !(ids.include?(c["IC - id"])) }
       @contacts = CSV::Table.new(new_contacts)
     end
 end
