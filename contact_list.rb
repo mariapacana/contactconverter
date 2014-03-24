@@ -12,7 +12,7 @@ require_relative 'contact_csv'
 class ContactList
 
   attr_accessor :contacts, :config
-  attr_reader :not_google
+  attr_reader :source_type
 
   include Util
   include Row
@@ -27,12 +27,12 @@ class ContactList
       change_headers = lambda do |header|
         header = @config[header].nil? ? header : @config[header]
       end
-      @not_google = true
       @config = YAML.load(File.open(args[:config_file])) 
       @contacts = CSV.read(args[:source_file], 
                                 headers: true, 
                                 header_converters: change_headers)
       @contacts = Header.headers_in_order(@contacts)
+      set_source_type(args[:source_file])
     end
   end
 
@@ -63,10 +63,10 @@ class ContactList
   end
 
   def remove_duplicate_contacts(field)
-    field_hash = make_frequency_hash(field)
-    field_hash = pull_out_duplicates(field, field_hash)
-    strip_duplicate_entries(field_hash) #deletes dups from main
-    save_to_file("icloud_no_#{field}_dups.csv")
+    field_hash = make_field_hash(field)
+    extract_duplicates!(field, field_hash)
+    delete_dups_from_contacts!(field_hash)
+    save_to_file("{@source_type}_no_#{field}_dups.csv")
     field_hash
   end
 
@@ -81,15 +81,15 @@ class ContactList
       end
     end
 
-    CSV.open("icloud_#{field}_duplicates.csv", "wb") do |csv|
+    CSV.open("#{@source_type}_#{field}_duplicates.csv", "wb") do |csv|
       csv << table.headers
       table.each { |row| csv << row }
     end
   end
 
-  def remove_contact_dups(email_hash)
+  def remove_contact_dups(field_hash)
     contacts_arry = []
-    email_hash.each do |email, contact_table|
+    field_hash.each do |email, contact_table|
       new_contact = {}
       remove_field_dups(PHONES, contact_table, new_contact)
       remove_field_dups(EMAILS, contact_table, new_contact)
@@ -210,9 +210,26 @@ class ContactList
   end
 
   private
+
+  def set_source_type(source_file)
+    if source_file.scan(/icloud/)
+        @source_type = "icloud"
+      elsif source_file.scan(/cardscan/)
+        @source_type = "cardscan"
+      elsif source_file.scan(/sageact/)
+        @source_type = "sageact"
+      else
+        @source_type = "google"
+      end
+  end
+
+  def source_file_not_google
+    @source_type != "google"
+  end
+
     def process_fields
       @contacts.each do |contact|
-        Row.get_phone_types(contact) if @not_google
+        Row.get_phone_types(contact) if source_file_not_google
         Row.standardize_phones(contact, FIELDS["phones"]["value"])
         Row.remove_duplicates(STRUC_EMAILS, contact)
         Row.remove_duplicates(STRUC_WEBSITES, contact)
@@ -229,7 +246,7 @@ class ContactList
       @contacts = CSV::Table.new(new_contacts)
     end
 
-    def make_frequency_hash(field)
+    def make_field_hash(field)
       field_hash = {}
       @contacts.each do |contact|
         if !(field_hash[contact[field]].nil?)
@@ -241,13 +258,13 @@ class ContactList
       field_hash
     end
 
-    def pull_out_duplicates(field, field_hash)
-      field_hash.select do |field_val, contact|
+    def extract_duplicates!(field, field_hash)
+      field_hash.select! do |field_val, contact|
         contact.size > 1 && !Util.nil_or_empty?(field_val) && ContactCSV.similarity_tests(field, COMPARISON[field], contact)
       end
     end
 
-    def strip_duplicate_entries(field_hash)
+    def delete_dups_from_contacts!(field_hash)
       ids = field_hash.values.map {|c| c["IC - id"]}.flatten
       new_contacts = @contacts.select {|c| !(ids.include?(c["IC - id"])) }
       @contacts = CSV::Table.new(new_contacts)
