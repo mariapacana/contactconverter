@@ -60,35 +60,12 @@ class ContactList
     remove_sparse_contacts
   end
 
-  def generate_duplicates(field)
+  def remove_duplicate_contacts(field)
     field_hash = make_frequency_hash(field)
     field_hash = pull_out_duplicates(field, field_hash)
-    strip_duplicate_entries(field_hash)
-    delete_blank_columns
+    strip_duplicate_entries(field_hash) #deletes dups from main
     save_to_file("icloud_no_#{field}_dups.csv")
-
-    contacts_arry = remove_contact_dups(field_hash)
-    table = convert_contact_arry_to_csv(contacts_arry)
-    reprocess_row_dups(table)
-
-    table.headers.each do |header|
-      if table[header].uniq.size < 3 && header != "Gender"
-        table.delete(header)
-      end
-    end
-
-    CSV.open("icloud_#{field}_duplicates.csv", "wb") do |csv|
-      csv << table.headers
-      table.each { |row| csv << row }
-    end
-  end
-
-  def reprocess_row_dups(contact_table)
-    contact_table.each do |contact|
-      Row.remove_duplicates(EMAILS, contact)
-      Row.remove_duplicates(WEBSITES, contact)
-      Row.remove_duplicates(PHONES, contact)
-    end
+    field_hash
   end
 
   def make_frequency_hash(field)
@@ -104,21 +81,16 @@ class ContactList
   end
 
   def pull_out_duplicates(field, field_hash)
-    if field == FIRST_EMAIL || field == "Phone 1 - Value"
-      comparison_field = "Name"
-    elsif field == "Name"
-      comparison_field = FIRST_EMAIL
-    end 
     field_hash.select do |field_val, contact|
-      contact.size > 1 && !Util.nil_or_empty?(field_val) && contact_tests(field, comparison_field, contact)
+      contact.size > 1 && !Util.nil_or_empty?(field_val) && contact_tests(field, COMPARISON[field], contact)
     end
   end
 
   def contact_tests(field, comparison_field, contact)
     if field == "Name"
-      return name_test(field, contact) || vals_substantially_similar(comparison_field, contact)
+      return name_test(field, contact) || vals_substantially_similar(COMPARISON[field], contact)
     elsif field == FIRST_EMAIL || field == "Phone 1 - Value"
-      return vals_substantially_similar(comparison_field, contact)
+      return vals_substantially_similar(COMPARISON[field], contact)
     end
   end
 
@@ -151,6 +123,23 @@ class ContactList
 
   def given_name_same_as_family(contact)
     !(contact["Given Name"] & contact["Family Name"]).empty?
+  end
+
+  def process_duplicate_contacts(field_hash)
+    contacts_arry = remove_contact_dups(field_hash)
+    table = convert_contact_arry_to_csv(contacts_arry)
+    reprocess_row_dups(table)
+
+    table.headers.each do |header|
+      if table[header].uniq.size < 3 && header != "Gender"
+        table.delete(header)
+      end
+    end
+
+    CSV.open("icloud_#{field}_duplicates.csv", "wb") do |csv|
+      csv << table.headers
+      table.each { |row| csv << row }
+    end
   end
 
   def remove_contact_dups(email_hash)

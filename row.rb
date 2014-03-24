@@ -5,26 +5,26 @@ module Row
 
   include Util
 
-  def self.get_phone_types(person)
-    person['Phone 2 - Type'] = 'mobile' if person.has_field?('Phone 2 - Value')
-    person['Phone 3 - Type'] = 'home' if person.has_field?('Phone 3 - Value')
-    person['Phone 4 - Type'] = 'pager' if person.has_field?('Phone 4 - Value')
-    person['Phone 5 - Type'] = 'fax' if person.has_field?('Phone 5 - Value')
+  def self.get_phone_types(contact)
+    contact['Phone 2 - Type'] = 'mobile' if contact.has_field?('Phone 2 - Value')
+    contact['Phone 3 - Type'] = 'home' if contact.has_field?('Phone 3 - Value')
+    contact['Phone 4 - Type'] = 'pager' if contact.has_field?('Phone 4 - Value')
+    contact['Phone 5 - Type'] = 'fax' if contact.has_field?('Phone 5 - Value')
 
-    if !Util.nil_or_empty?(person['Phone 1 - Value'])
-      if person['Phone 1 - Value'] == person['Phone 2 - Value']
-        person['Phone 1 - Type'] = 'mobile'
-      elsif person['Phone 1 - Value'] == person['Phone 3 - Value']
-        person['Phone 1 - Type'] = 'home'
-      elsif person['Phone 1 - Value'] == person['Phone 4 - Value']
-        person['Phone 1 - Type'] = 'pager'
+    if !Util.nil_or_empty?(contact['Phone 1 - Value'])
+      if contact['Phone 1 - Value'] == contact['Phone 2 - Value']
+        contact['Phone 1 - Type'] = 'mobile'
+      elsif contact['Phone 1 - Value'] == contact['Phone 3 - Value']
+        contact['Phone 1 - Type'] = 'home'
+      elsif contact['Phone 1 - Value'] == contact['Phone 4 - Value']
+        contact['Phone 1 - Type'] = 'pager'
       end
     end
   end
 
-  def self.standardize_phones(person, fields)
+  def self.standardize_phones(contact, fields)
     fields.each do |field|
-      phone = person[field]
+      phone = contact[field]
       if !Util.nil_or_empty?(phone)
         phone.gsub!(/(\D)/,"")
         if phone.length == 11
@@ -32,16 +32,16 @@ module Row
         elsif phone.length == 10
           phone.insert(0, '+1') 
         end
-        person[field] = phone
+        contact[field] = phone
       end
     end
   end
 
-  def self.invalid_email(person, fields)
+  def self.invalid_email(contact, fields)
     fields.each do |field|
       valid_email = /^[^\s"';@()><\\]*@{1}{1}[^\s"';@()><\\]*.[^\s"';@()><\\]*$/
-      if !Util.nil_or_empty?(person[field])
-        return true if !person[field].match(valid_email)
+      if !Util.nil_or_empty?(contact[field])
+        return true if !contact[field].match(valid_email)
       end
     end
     return false
