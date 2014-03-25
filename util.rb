@@ -8,4 +8,9 @@ module Util
     my_hash.each {|k,v| my_hash[k] = v.size > 1 ? v.join("\n") : v[0] }
   end
 
+  def self.field_not_empty?(subvalues)
+    subvalues.select {|value| !Util.nil_or_empty?(value)}.size >= 1
+  end
+
+
 end

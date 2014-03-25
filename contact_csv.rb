@@ -1,7 +1,12 @@
-require File.expand_path('../util.rb', __FILE__)
+require_relative 'constants'
+require_relative 'util'
 require 'pry'
 
 module ContactCSV
+
+  include Util
+  include Constants
+
   def self.similarity_tests(field, comparison_field, contact)
     if field == "Name"
       return name_test(field, contact) || vals_substantially_similar(COMPARISON[field], contact)

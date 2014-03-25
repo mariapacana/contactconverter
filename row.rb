@@ -123,9 +123,6 @@ module Row
     subfields[1..-1].map {|val| contact[val]}
   end
 
-  def self.field_not_empty?(subvalues)
-    subvalues.select {|value| !Util.nil_or_empty?(value)}.size >= 1
-  end
 
   def self.enough_contact_info(contact)
     !Util.nil_or_empty?(contact["E-mail 1 - Value"]) || (!Util.nil_or_empty?(contact["Name"]) || !Util.nil_or_empty?(contact["Phone 1 - Value"]))
