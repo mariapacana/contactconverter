@@ -92,13 +92,8 @@ module Row
     struc_fields.each do |field, subfields|
       subfield_type = subfields[0]
       subvalues = self.value_subfields(contact, subfields)
-
-      if self.field_not_empty?(subvalues)
-        if !field_hash.has_key?(subvalues)
-          field_hash[subvalues] = [contact[subfield_type]]
-        else
-          field_hash[subvalues] << contact[subfield_type]
-        end
+      if Util.field_not_empty?(subvalues)
+        Util.add_value_to_hash(field_hash, subvalues,contact[subfield_type])
       end
     end
 
@@ -122,7 +117,6 @@ module Row
   def self.value_subfields(contact, subfields)
     subfields[1..-1].map {|val| contact[val]}
   end
-
 
   def self.enough_contact_info(contact)
     !Util.nil_or_empty?(contact["E-mail 1 - Value"]) || (!Util.nil_or_empty?(contact["Name"]) || !Util.nil_or_empty?(contact["Phone 1 - Value"]))
