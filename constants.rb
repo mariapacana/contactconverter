@@ -7,6 +7,8 @@ module Constants
   STRUC_FIELDS = YAML.load(File.open(File.expand_path('../config/structured.yaml', __FILE__)))
   COMPARISON = YAML.load(File.open(File.expand_path('../config/comparison.yaml', __FILE__)))
   SHORTNAMES = YAML.load(File.open(File.expand_path('../config/shortnames.yaml', __FILE__)))
+  SA_ADDRESSES = YAML.load(File.open(File.expand_path('../config/sageact_addresses.yaml', __FILE__)))
+  SA_STRUC_ADDRESSES = YAML.load(File.open(File.expand_path('../config/sageact_struc_addresses.yaml', __FILE__)))
 
   EMAILS = Hash[FIELDS["emails"]["value"].zip(FIELDS["emails"]["type"])]
   WEBSITES = Hash[FIELDS["websites"]["value"].zip(FIELDS["websites"]["type"])]

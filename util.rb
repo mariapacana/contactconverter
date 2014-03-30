@@ -4,6 +4,10 @@ module Util
     value.nil? || value == "" || value.empty?
   end
 
+  def self.set_value_if_nil(my_hash, my_key, new_value)
+    my_hash[my_key] = new_value if self.nil_or_empty?(my_hash[my_key])
+  end
+
   def self.join_hash_values(my_hash)
     my_hash.each do |key, value|
       if value.uniq.size > 1

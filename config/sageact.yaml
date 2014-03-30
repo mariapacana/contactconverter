@@ -4,51 +4,51 @@
 # 'Address 3 Address 1': 
 # 'Address 3 Address 2': 
 # 'Address 3 Address 3': 
-# 'Address 3 City': 
-# 'Address 3 Country': 
-# 'Address 3 State': 
-# 'Address 3 ZIP Code': 
+'Address 3 City': 'Address 3 - City'
+'Address 3 Country': 'Address 3 - Country'
+'Address 3 State': 'Address 3 - Region'
+'Address 3 ZIP Code': 'Address 3 - Postal Code'
 # 'Alternate Extension': 
 # 'Alternate Phone': 
 'Birth Date': 'Birthday'
 'City': 'Address 1 - City'
 'Company': 'Organization 1 - Name'
-# 'Contact': 
-'Country': 'Address 1 - Country'
+'Contact': 'Name'
+# 'Country':
 # 'Create Date':
 # 'Department': 
-'Edit Date':''
+# 'Edit Date':
 'E-mail': 'E-mail 1 - Value'
 # 'Extension': 
 # 'Fax Extension': 
 'Fax Phone': 'Phone 5 - Value'
-# 'First Name': 
+'First Name': 'Given Name'
 # 'Home Address 1':
 # 'Home Address 2':
 # 'Home Address 3':
-# 'Home City':
-# 'Home Country':
+'Home City': 'Address 2 - City'
+'Home Country': 'Address 2 - Country'
 # 'Home Extension': 
 'Home Phone': 'Phone 3 - Value'
-# 'Home State':
-# 'Home ZIP Code': 
+'Home State': 'Address 2 - Region'
+'Home ZIP Code': 'Address 2 - Postal Code'
 # 'ID/Status': 
 # 'Last Attempt': 
 # 'Last Edited By': 
 # 'Last E-mail': 
 # 'Last Meeting': 
-# 'Last Name': 
+'Last Name': 'Family Name'
 # 'Last Reach': 
 # 'Last Results': 
 # 'Letter Date': 
 # 'Messenger ID': 
-# 'Middle Name': 
+'Middle Name': 'Additional Name'
 # 'Mobile Extension': 
 'Mobile Phone': 'Phone 2 - Value'
 'Name Prefix': 'Name Prefix'
 'Name Suffix': 'Name Suffix'
 # 'Pager Extension': 
-'Pager Phone': 'Phone 4 - Type'
+'Pager Phone': 'Phone 4 - Value'
 'Personal E-mail': 'E-mail 2 - Value'
 'Phone': 'Phone 1 - Value'
 # 'Private': 
@@ -57,7 +57,7 @@
 # 'Referred By': 
 # 'Salutation': 
 # 'Spouse': 
-'State': 'Address 1 - State'
+'State': 'Address 1 - Region'
 'Title': 'Organization 1 - Title'
 # 'User 1': 
 # 'User 10': 

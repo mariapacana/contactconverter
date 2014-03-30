@@ -8,6 +8,7 @@ require_relative 'row'
 require_relative 'column'
 require_relative 'constants'
 require_relative 'header'
+require_relative 'sageact'
 require_relative 'contact_csv'
 
 class ContactList
@@ -20,6 +21,7 @@ class ContactList
   include Constants
   include Header
   include ContactCSV
+  include Sageact
 
   def initialize(args)
     if args[:config_file].nil?
@@ -33,6 +35,7 @@ class ContactList
       @contacts = CSV.read(args[:source_file], 
                                 headers: true, 
                                 header_converters: change_headers)
+      delete_blank_non_google_columns
       @contacts = Header.headers_in_order(@contacts)
     end
   end
@@ -47,6 +50,12 @@ class ContactList
       @contacts.each do |row|
         csv << row
       end
+    end
+  end
+
+  def fix_non_google
+    @contacts.each do |contact|
+      Sageact.sort_addresses(contact)
     end
   end
 
@@ -85,6 +94,21 @@ class ContactList
     def source_file_not_google
       @source_type != "google"
     end
+
+    def delete_blank_columns(my_headers)
+      my_headers.each do |header|
+        if @contacts[header].uniq.size < 3 && header != "Gender"
+          @contacts.delete(header)
+        end
+      end
+    end
+
+    def delete_blank_non_google_columns
+      my_headers = headers.select{|h| h.match(SHORTNAMES[@source_type])}
+      delete_blank_columns(my_headers)
+    end
+
+
 
     def process_fields
       @contacts.each do |contact|
