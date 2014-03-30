@@ -1,9 +1,12 @@
-require File.expand_path('../util.rb', __FILE__)
+require_relative 'util'
+require_relative 'constants'
+
 require 'pry'
 
 module Row
 
   include Util
+  include Constants
 
   def self.get_phone_types(contact)
     contact['Phone 2 - Type'] = 'mobile' if contact.has_field?('Phone 2 - Value')
@@ -34,6 +37,16 @@ module Row
         end
         contact[field] = phone
       end
+    end
+  end
+
+
+  ## Had to replace \\n with \n.\. If we decide to save the data,
+  ## will have to use String#scan.
+  def self.standardize_notes(contact)
+    cardscan_regexp = /^(#{ALL_CARDSCAN_FIELDS.join("|")}):\s.*$/
+    if !Util.nil_or_empty?(contact["Notes"])  
+      contact["Notes"] = contact["Notes"].gsub(/\\n/, "\n").gsub(cardscan_regexp, "").gsub(/\n+/, "\n")
     end
   end
 

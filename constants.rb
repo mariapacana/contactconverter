@@ -2,10 +2,10 @@ require 'yaml'
 
 module Constants
 
-  G_HEADERS = YAML.load(File.open('google.yaml'))
-  FIELDS = YAML.load(File.open('google_by_category.yaml'))
-  STRUC_FIELDS = YAML.load(File.open('structured.yaml'))
-  COMPARISON = YAML.load(File.open('comparison.yaml'))
+  G_HEADERS = YAML.load(File.open(File.expand_path('../config/google.yaml', __FILE__)))
+  FIELDS = YAML.load(File.open(File.expand_path('../config/google_by_category.yaml', __FILE__)))
+  STRUC_FIELDS = YAML.load(File.open(File.expand_path('../config/structured.yaml', __FILE__)))
+  COMPARISON = YAML.load(File.open(File.expand_path('../config/comparison.yaml', __FILE__)))
 
   EMAILS = Hash[FIELDS["emails"]["value"].zip(FIELDS["emails"]["type"])]
   WEBSITES = Hash[FIELDS["websites"]["value"].zip(FIELDS["websites"]["type"])]
@@ -20,5 +20,7 @@ module Constants
   FIRST_EMAIL = FIELDS["emails"]["value"][0]
 
   UNIQUE_HEADERS =  G_HEADERS - FIELDS["phones"]["type"] - FIELDS["phones"]["value"] - FIELDS["websites"]["type"] - FIELDS["websites"]["value"] - FIELDS["addresses"]["type"]- FIELDS["addresses"]["formatted"]- FIELDS["addresses"]["type"]- FIELDS["addresses"]["street"]- FIELDS["addresses"]["city"]- FIELDS["addresses"]["pobox"]- FIELDS["addresses"]["region"]- FIELDS["addresses"]["postal_code"]- FIELDS["addresses"]["country"]- FIELDS["addresses"]["extended"]- FIELDS["emails"]["type"] - FIELDS["emails"]["value"]
+
+  ALL_CARDSCAN_FIELDS = YAML.load(File.open(File.expand_path('../config/cardscan.yaml', __FILE__))).keys + YAML.load(File.open(File.expand_path('../config/mystery.yaml', __FILE__))).keys
 
 end

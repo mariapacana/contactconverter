@@ -71,6 +71,19 @@ describe Row do
     end
   end
 
+  describe "#standardize_notes" do
+    let(:notes_unformatted) {CSV.read(File.open(File.expand_path("../fixtures/notes_strip.csv", __FILE__)), headers: true)}
+    let(:larry) {notes_unformatted[0]}
+    let(:phil) {notes_unformatted[1]}
+    let(:mudgeon) {notes_unformatted[2]}
+    it "removes all the externally added fields from the notes" do
+      notes_unformatted.each {|c| Row.standardize_notes(c)}
+      larry["Notes"].should eq("# 7306 LEASING\n")
+      phil["Notes"].should eq("# 464\n")
+      mudgeon["Notes"].should eq("# 543\n# 54\nLooking for an 8' slider 12/12/2048")
+    end 
+  end
+
   describe "removes duplicate email, phone, website info from rows" do
     let(:duplicates) {CSV.read(File.open(File.expand_path("../fixtures/contact_duplicates.csv", __FILE__)), headers: true)}
     let(:email_dups) {duplicates[0]}

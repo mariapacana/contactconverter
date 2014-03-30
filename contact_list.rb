@@ -97,6 +97,7 @@ class ContactList
         Row.delete_invalid_names(contact)
         Row.move_contact_name(contact)
         Row.make_name(contact)
+        Row.standardize_notes(contact)
       end
     end
 

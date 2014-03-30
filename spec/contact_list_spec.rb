@@ -10,10 +10,10 @@ include Constants
 describe ContactList do
 
   let (:icloud) {ContactList.new(source_file: File.expand_path("../fixtures/icloud_fixture.csv", __FILE__),
-                                 config_file: File.expand_path("../../icloud.yaml", __FILE__))}
+                                 config_file: File.expand_path("../../config/icloud.yaml", __FILE__))}
   let (:icloud_dups) {ContactList.new(source_file: File.expand_path("../fixtures/contact_duplicates_col.csv", __FILE__))}
 
-  # let(:email_hash){icloud_dups.remove_duplicate_contacts("E-mail 1 - Value")}
+  let(:email_hash){icloud_dups.remove_duplicate_contacts("E-mail 1 - Value")}
 
   describe "#initialize" do
     it "should put everything in a Google header format" do
