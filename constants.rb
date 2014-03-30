@@ -6,6 +6,7 @@ module Constants
   FIELDS = YAML.load(File.open(File.expand_path('../config/google_by_category.yaml', __FILE__)))
   STRUC_FIELDS = YAML.load(File.open(File.expand_path('../config/structured.yaml', __FILE__)))
   COMPARISON = YAML.load(File.open(File.expand_path('../config/comparison.yaml', __FILE__)))
+  SHORTNAMES = YAML.load(File.open(File.expand_path('../config/shortnames.yaml', __FILE__)))
 
   EMAILS = Hash[FIELDS["emails"]["value"].zip(FIELDS["emails"]["type"])]
   WEBSITES = Hash[FIELDS["websites"]["value"].zip(FIELDS["websites"]["type"])]

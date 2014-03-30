@@ -25,15 +25,15 @@ class ContactList
     if args[:config_file].nil?
       @contacts = CSV.read(args[:source_file], headers: true)
     else
+      set_source_type(args[:source_file])
       change_headers = lambda do |header|
-        header = @config[header].nil? ? header : @config[header]
+        header = @config[header].nil? ? "#{SHORTNAMES[@source_type]} - #{header}" : @config[header]
       end
       @config = YAML.load(File.open(args[:config_file])) 
       @contacts = CSV.read(args[:source_file], 
                                 headers: true, 
                                 header_converters: change_headers)
       @contacts = Header.headers_in_order(@contacts)
-      set_source_type(args[:source_file])
     end
   end
 
@@ -71,11 +71,11 @@ class ContactList
 
   private
     def set_source_type(source_file)
-      if source_file.scan(/icloud/)
+      if source_file.match(/icloud/)
           @source_type = "icloud"
-      elsif source_file.scan(/cardscan/)
+      elsif source_file.match(/cardscan/)
         @source_type = "cardscan"
-      elsif source_file.scan(/sageact/)
+      elsif source_file.match(/sageact/)
         @source_type = "sageact"
       else
         @source_type = "google"

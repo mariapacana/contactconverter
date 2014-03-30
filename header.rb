@@ -20,7 +20,12 @@ module Header
     end
   end
 
+  def self.delete_nil_headers(contacts)
+    contacts.headers.select {|h| !Util.nil_or_empty? contacts[h]}
+  end
+
   def self.headers_in_order(contacts)
+    updated_headers = self.delete_nil_headers(contacts)
     updated_headers = self.updated_headers(contacts)
     new_contacts = contacts.map do |contact|
       CSV::Row.new(updated_headers,
