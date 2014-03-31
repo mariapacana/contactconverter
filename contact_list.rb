@@ -53,13 +53,16 @@ class ContactList
     end
   end
 
-  def fix_non_google
+  def fix_sageact
     @contacts.each do |contact|
       Sageact.sort_addresses(contact)
     end
+    binding.pry
+    SA_STRUC_ADDRESSES.values.flatten.each{|addy| @contacts.delete(addy)}
   end
 
   def format_list
+    fix_sageact if @source_type == "sageact"
     process_fields
     remove_sparse_contacts
   end
@@ -107,8 +110,6 @@ class ContactList
       my_headers = headers.select{|h| h.match(SHORTNAMES[@source_type])}
       delete_blank_columns(my_headers)
     end
-
-
 
     def process_fields
       @contacts.each do |contact|
