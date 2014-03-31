@@ -56,9 +56,9 @@ class ContactList
   def fix_sageact
     @contacts.each do |contact|
       Sageact.sort_addresses(contact)
+      Sageact.sort_extensions(contact)
     end
-    binding.pry
-    SA_STRUC_ADDRESSES.values.flatten.each{|addy| @contacts.delete(addy)}
+    SA_STRUC_DELETE.each{|addy| @contacts.delete(addy)}
   end
 
   def format_list

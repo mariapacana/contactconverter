@@ -8,7 +8,7 @@
 'Address 3 Country': 'Address 3 - Country'
 'Address 3 State': 'Address 3 - Region'
 'Address 3 ZIP Code': 'Address 3 - Postal Code'
-# 'Alternate Extension': 
+# 'Alternate Extension':
 # 'Alternate Phone': 
 'Birth Date': 'Birthday'
 'City': 'Address 1 - City'
@@ -55,7 +55,7 @@
 # 'Record Creator': 
 # 'Record Manager': 
 # 'Referred By': 
-# 'Salutation': 
+'Salutation': 'Short Name'
 # 'Spouse': 
 'State': 'Address 1 - Region'
 'Title': 'Organization 1 - Title'
