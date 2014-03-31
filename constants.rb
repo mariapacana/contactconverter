@@ -8,7 +8,10 @@ module Constants
   COMPARISON = YAML.load(File.open(File.expand_path('../config/comparison.yaml', __FILE__)))
   SHORTNAMES = YAML.load(File.open(File.expand_path('../config/shortnames.yaml', __FILE__)))
   SA_ADDRESSES = YAML.load(File.open(File.expand_path('../config/sageact_addresses.yaml', __FILE__)))
-  SA_STRUC_ADDRESSES = YAML.load(File.open(File.expand_path('../config/sageact_struc_addresses.yaml', __FILE__)))
+  SA_STRUC = YAML.load(File.open(File.expand_path('../config/sageact_struc_addresses.yaml', __FILE__)))
+  SA_STRUC_ADDRESSES = SA_STRUC["addresses"]
+  SA_STRUC_EXTENSIONS = SA_STRUC["phones"]["extensions"]
+  SA_STRUC_DELETE = SA_STRUC_ADDRESSES.values.flatten + SA_STRUC_EXTENSIONS.keys + ['SA - Alternate Phone']
 
   EMAILS = Hash[FIELDS["emails"]["value"].zip(FIELDS["emails"]["type"])]
   WEBSITES = Hash[FIELDS["websites"]["value"].zip(FIELDS["websites"]["type"])]

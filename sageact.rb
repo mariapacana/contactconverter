@@ -8,9 +8,43 @@ module Sageact
   include Util
   include Constants
 
+  def self.sort_extensions(contact)
+    SA_STRUC_EXTENSIONS.each do |ext, phone|
+      unless ext == 'SA - Alternate Extension'
+        contact[phone] = "#{contact[phone]} Extension: #{contact[ext]}" if !Util.nil_or_empty?(contact[ext])
+      end
+    end
+    if !Util.nil_or_empty?(contact['SA - Alternate Phone'])
+      if !Util.nil_or_empty?(contact['SA - Alternate Extension'])
+        alternate = "#{contact['SA - Alternate Phone']} Extension: #{contact['SA - Alternate Extension']}"
+      else
+        alternate = contact['SA - Alternate Phone']
+      end
+      PHONES.keys.each do |phone_val|
+        if Util.nil_or_empty?(contact[phone_val])
+          contact[phone_val] = alternate
+          return
+        end
+      end
+    end
+  end
+
   def self.sort_addresses(contact)
     SA_STRUC_ADDRESSES.each do |type, array|
+      self.label_addresses(contact, type, array)
       self.sort_address(contact, type, array)
+    end
+  end
+
+  def self.label_addresses(contact, type, array)
+    if array.select{|field| !Util.nil_or_empty?(contact[field])}.size >= 1
+      if type == "work"
+        contact["Address 1 - Type"] = "Work" 
+      elsif type == "home"
+        contact["Address 2 - Type"] = "Home"
+      else
+        contact["Address 3 - Type"] = "Other"
+      end
     end
   end
 
