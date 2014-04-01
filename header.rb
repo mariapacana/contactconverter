@@ -11,7 +11,7 @@ module Header
   end
 
   def self.updated_headers(contacts)
-    G_HEADERS - ["Notes"] + self.non_google_headers(contacts) + ["Notes"]
+    ["ID"] + G_HEADERS - ["Notes"] + self.non_google_headers(contacts) + ["Notes"]
   end
 
   def self.add_missing_headers(updated_headers, contact)

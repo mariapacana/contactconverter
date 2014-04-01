@@ -12,8 +12,14 @@ describe ContactList do
   let (:icloud) {ContactList.new(source_file: File.expand_path("../fixtures/icloud_fixture.csv", __FILE__),
                                  config_file: File.expand_path("../../config/icloud.yaml", __FILE__))}
   let (:icloud_dups) {ContactList.new(source_file: File.expand_path("../fixtures/contact_duplicates_col.csv", __FILE__))}
+  let (:sageact_dups) {ContactList.new(source_file: File.expand_path("../fixtures/sage_duplicates.csv", __FILE__), config_file: File.expand_path("../../config/sageact.yaml", __FILE__))}
 
   let(:email_hash){icloud_dups.remove_duplicate_contacts("E-mail 1 - Value")}
+
+  before(:each) do
+    icloud_dups.format_list
+    sageact_dups.format_list
+  end
 
   describe "#initialize" do
     it "should put everything in a Google header format" do
@@ -24,14 +30,17 @@ describe ContactList do
   describe "#format_list" do
     it "should remove contacts without info" do
       icloud.format_list
-      icloud.contacts["IC - id"].should_not include("pas-id-53095B97000023A3")
-      icloud.contacts["IC - id"].should include("pas-id-53095B97000023B2")
+      icloud.contacts["ID"].should_not include("pas-id-53095B97000023A3")
+      icloud.contacts["ID"].should include("pas-id-53095B97000023B2")
     end
   end
 
   describe "#remove_and_process_duplicate_contacts" do
     context "when stripping email duplicates" do
-      before(:each) {icloud_dups.remove_and_process_duplicate_contacts("E-mail 1 - Value")}
+
+      before(:each) do 
+        icloud_dups.remove_and_process_duplicate_contacts("E-mail 1 - Value")
+      end
       let(:email_dups) {CSV.read(File.open(File.expand_path("../_E-mail 1 - Value_duplicates.csv", "__FILE__")), headers: true)}
 
       it "removes email duplicates from list of contacts" do
@@ -48,7 +57,9 @@ describe ContactList do
     end
 
     context "when processing phone duplicates" do
-      before(:each) {icloud_dups.remove_and_process_duplicate_contacts("Phone 1 - Value")}
+      before(:each) do 
+        icloud_dups.remove_and_process_duplicate_contacts("Phone 1 - Value")
+      end
       let(:phone_dups) {CSV.read(File.open(File.expand_path("../_Phone 1 - Value_duplicates.csv", "__FILE__")), headers: true)}
       it "removes phone duplicates from list of contacts" do
         icloud_dups.contacts["Name"].should_not include("Edgar Thistledown")
@@ -61,6 +72,18 @@ describe ContactList do
     context "when given invalid arguments" do
       it "should raise error" do
         expect {icloud_dups.remove_and_process_duplicate_contacts("booga")}.to raise_error
+      end
+
+    end
+
+    context "in the case of SageAct" do
+      before(:each) do
+        sageact_dups.remove_and_process_duplicate_contacts("E-mail 1 - Value")
+      end
+      let(:email_dups) {CSV.read(File.open(File.expand_path("../_E-mail 1 - Value_duplicates.csv", "__FILE__")), headers: true)}
+      it "should merge together emails" do
+        email_dups.size.should eq(1)
+        sageact_dups.contacts.size.should eq(2)
       end
     end
   end

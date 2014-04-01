@@ -82,6 +82,7 @@ class ContactList
   end
 
   def format_list
+    add_id_column unless @source_type == "icloud"
     fix_sageact if @source_type == "sageact"
     process_fields
     remove_sparse_contacts
@@ -134,6 +135,14 @@ class ContactList
       headers.select{|h| h.match(SHORTNAMES[@source_type])}
     end
 
+    def add_id_column
+      id = 0
+      @contacts.each do |contact|
+        contact["ID"] = id
+        id += 1
+      end
+    end
+
     def process_fields
       @contacts.each do |contact|
         Row.get_phone_types(contact) if source_file_not_google
@@ -173,8 +182,8 @@ class ContactList
     end
 
     def delete_dups_from_contacts!(field_hash)
-      ids = field_hash.values.map {|c| c["IC - id"]}.flatten
-      new_contacts = @contacts.select {|c| !(ids.include?(c["IC - id"])) }
+      ids = field_hash.values.map {|c| c["ID"]}.flatten
+      new_contacts = @contacts.select {|c| !(ids.include?(c["ID"])) }
       @contacts = CSV::Table.new(new_contacts)
     end
 end
