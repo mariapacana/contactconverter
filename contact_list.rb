@@ -53,6 +53,26 @@ class ContactList
     end
   end
 
+  def <<(other_contact_list)
+    raise(TypeError, "argument must be a ContactList") unless other_contact_list.class == ContactList
+
+    combined_headers = headers && other_contact_list.headers
+    new_headers = combined_headers - headers
+    add_new_headers(new_headers)
+
+    new_contacts = []
+    other_contact_list.contacts.each do |contact|
+      contact_arry = headers.map {|h| contact[h] || ""}
+      new_contacts << CSV::Row.new(headers, contact_arry)
+    end
+
+    new_contacts.each {|row| @contacts << row}
+  end
+
+  def add_new_headers(new_headers)
+    new_headers.each {|h| @contacts.each {|c| c[h] = "" } }
+  end
+
   def fix_sageact
     @contacts.each do |contact|
       Sageact.sort_addresses(contact)
@@ -107,8 +127,11 @@ class ContactList
     end
 
     def delete_blank_non_google_columns
-      my_headers = headers.select{|h| h.match(SHORTNAMES[@source_type])}
-      delete_blank_columns(my_headers)
+      delete_blank_columns(non_google_columns) if source_file_not_google
+    end
+
+    def non_google_columns
+      headers.select{|h| h.match(SHORTNAMES[@source_type])}
     end
 
     def process_fields
