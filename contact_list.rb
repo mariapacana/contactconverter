@@ -24,10 +24,11 @@ class ContactList
   include Sorter
 
   def initialize(args)
+    set_source_type(args[:source_file])
+
     if args[:config_file].nil?
       @contacts = CSV.read(args[:source_file], headers: true)
     else
-      set_source_type(args[:source_file])
       change_headers = lambda do |header|
         header = @config[header].nil? ? "#{SHORTNAMES[@source_type]} - #{header}" : @config[header]
       end
@@ -73,15 +74,26 @@ class ContactList
     new_headers.each {|h| @contacts.each {|c| c[h] = "" } }
   end
 
-  def fix_sageact
+  def sort_address_fields
     @contacts.each do |contact|
-      Sorter.sort_addresses(contact, SA_STRUC_ADDRESSES)
-      Sorter.sort_extensions(contact, SA_STRUC_EXTENSIONS)
+      Sorter.sort_addresses(contact, STRUC[@source_type]["addresses"])
+      Sorter.sort_extensions(contact, STRUC[@source_type]["extensions"]) if @source_type == "sageact"
     end
-    SA_STRUC_DELETE.each{|addy| @contacts.delete(addy)}
+    headers_to_delete.each{|addy| @contacts.delete(addy)}
+  end
+
+  def headers_to_delete
+    if @source_type != 'sageact'
+      STRUC[@source_type]["addresses"].values.flatten
+    elsif @source_type == 'sageact'
+      STRUC[@source_type]["addresses"].values.flatten + SA_STRUC_EXTENSIONS.keys + ['SA - Alternate Phone']
+    else
+      raise(Error, 'this must be a non-google list')
+    end
   end
 
   def format_list
+    sort_address_fields if source_file_not_google
     process_fields
     remove_sparse_contacts
   end

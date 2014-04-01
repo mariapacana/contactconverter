@@ -25,13 +25,9 @@ module Constants
   ALL_CARDSCAN_FIELDS = YAML.load(File.open(File.expand_path('../config/cardscan.yaml', __FILE__))).keys + YAML.load(File.open(File.expand_path('../config/mystery.yaml', __FILE__))).keys
 
   # All structured addresses
-  SA_STRUC = YAML.load(File.open(File.expand_path('../config/sageact_struc_addresses.yaml', __FILE__)))
-  SA_STRUC_ADDRESSES = SA_STRUC["addresses"]
-  SA_STRUC_EXTENSIONS = SA_STRUC["phones"]["extensions"]
-  SA_STRUC_DELETE = SA_STRUC_ADDRESSES.values.flatten + SA_STRUC_EXTENSIONS.keys + ['SA - Alternate Phone']
-  CS_STRUC_ADDRESSES = YAML.load(File.open(File.expand_path('../config/cardscan_struc_addresses.yaml', __FILE__)))
-  CS_STRUC_DELETE = CS_STRUC_ADDRESSES.values.flatten
-  IC_STRUC_ADDRESSES = YAML.load(File.open(File.expand_path('../config/icloud_struc_addresses.yaml', __FILE__)))
-  IC_STRUC_DELETE = IC_STRUC_ADDRESSES.values.flatten
-
+  STRUC = YAML.load(File.open(File.expand_path('../config/struc_addresses.yaml', __FILE__)))
+  SA_STRUC_ADDRESSES = STRUC["sageact"]["addresses"]
+  SA_STRUC_EXTENSIONS = STRUC["sageact"]["extensions"]
+  CS_STRUC_ADDRESSES = STRUC["cardscan"]["addresses"]
+  IC_STRUC_ADDRESSES = STRUC["icloud"]["addresses"]
 end

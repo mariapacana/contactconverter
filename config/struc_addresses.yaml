@@ -1,0 +1,39 @@
+sageact:
+  addresses:
+    work:
+     - 'SA - Address 1'
+     - 'SA - Address 2'
+     - 'SA - Address 3'
+    home:
+     - 'SA - Home Address 1'
+     - 'SA - Home Address 2'
+     - 'SA - Home Address 3'
+    other:
+     - 'SA - Address 3 Address 1'
+     - 'SA - Address 3 Address 2'
+     - 'SA - Address 3 Address 3'
+  phones:
+    - 'SA - Alternate Phone'
+  extensions:
+    'SA - Alternate Extension': ''
+    'SA - Fax Extension': 'Phone 5 - Value'
+    'SA - Home Extension': 'Phone 3 - Value'
+    'SA - Mobile Extension': 'Phone 2 - Value'
+    'SA - Pager Extension': 'Phone 4 - Value'
+    'SA - Extension': 'Phone 1 - Value'
+cardscan:
+  addresses:
+    work:
+     - 'CS - Address_Line_1'
+     - 'CS - Address_Line_2'
+    home:
+     - 'CS - 2nd_Address_Line_1'
+     - 'CS - 2nd_Address_Line_2'
+icloud:
+  addresses:
+    work:
+     - 'IC - Business Address'
+     - 'IC - Business Address2'
+    home:
+     - 'IC - Home Address'
+     - 'IC - Home Address2'

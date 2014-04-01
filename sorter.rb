@@ -49,79 +49,79 @@ module Sorter
   end
 
   def self.sort_address(contact, type, address_array)
-    if address_array.size == 3
-      self.sort_three_addresses(contact, type, address_array)
-    elsif address_array.size == 2
-      self.sort_two_addresses(contact, type, address_array)
-    end
+    addresses = address_array.map {|a| contact[a]}
+    new_street_vals = addresses.map {|a| self.return_address(contact, type, a)} << contact[self.full_address(type, "Street")]
+    new_vals =  new_street_vals.select! {|val| !Util.nil_or_empty?(val)}.uniq
+    contact[self.full_address(type, "Street")] = new_vals.join("\n")
   end
 
-
-  def self.sort_two_addresses(contact, type, address_array)
-    address_1 = contact[address_array[0]]
-    address_2 = contact[address_array[1]]
-
-    fixed1 = self.fix_address_field(contact, type, address_1)
-    fixed2 = self.fix_address_field(contact, type, address_2)
-    self.save_address_field(contact, type, "Street", "#{address_1 if !fixed1 && !Util.nil_or_empty?(address_1)}#{"\n" + address_2 if !fixed2 && !Util.nil_or_empty?(address_2)}")
+  def self.should_print(contact, type, address)
+    !self.fix_address_field(contact, type, address) && !Util.nil_or_empty?(address)
   end
 
-  def self.sort_three_addresses(contact, type, address_array)
-    address_1 = contact[address_array[0]]
-    address_2 = contact[address_array[1]]
-    address_3 = contact[address_array[2]]
-
-    fixed1 = self.fix_address_field(contact, type, address_1)
-    fixed2 = self.fix_address_field(contact, type, address_2)
-    fixed3 = self.fix_address_field(contact, type, address_3)
-
-    street = "#{address_1}"
-    street += "#{"\n"+address_2}" if !fixed2 && !Util.nil_or_empty?(address_2)
-    street += "#{"\n"+address_3}" if !fixed2 && !Util.nil_or_empty?(address_3)
-    self.save_address_field(contact, type, "Street", street)
+  def self.return_address(contact, type, address)
+    self.should_print(contact, type, address) ? address : nil
   end
 
   def self.fix_address_field(contact, type, address_field)
+    reg = {street: "(?<street>[\\d\\-]+\\s*[\\da-zA-Z]+\\s*[a-zA-Z.]+\\s(Ave.|Avenue|Rd.|Road|Street|Way|Lane|Ct.|Court|Circle))",
+           city: "(?<city>[a-zA-Z\\s]*)",
+           po_box: "(?<pobox>P\\.?O\\.?\\s*[Bb]ox\\s*\\d{1,6})",
+           region: "(?<region>[a-zA-Z]{1}\\.?[a-zA-Z]{1}\\.?)",
+           zip: "(?<zip>\\d{5}-\\d{4}|\\d{5}|[\\dA-Z]{5})"}
     if !Util.nil_or_empty?(address_field)
-      if data = address_field.match(/^[\s]*(?<street>[\d\-]+\s*[\da-zA-Z]+\s*[a-zA-Z.]+\s(Ave.|Avenue|Rd.|Road|Street|Way|Lane|Ct.|Court|Circle))[,\s\n]+(?<city>[a-zA-Z\s]*)[,\s\n]+(?<region>[a-zA-Z]{1}\.?[a-zA-Z]{1}\.?)[,\s]+(?<zip>\d{5}-\d{4}|\d{5}).*$/)
-        self.save_address_field(contact, type, "Street", data["street"])
-        self.save_address_field(contact, type, "City", data["city"])
-        self.save_address_field(contact, type, "Region", data["region"])
-        self.save_address_field(contact, type, "Postal Code", data["zip"])
+      address_field = address_field.gsub("\\n", "\n")
+      if data = address_field.match(/\A[\s\n]*#{reg[:street]}[,\s\n]+#{reg[:city]}[,\s\n]+#{reg[:region]}[,\s]+#{reg[:zip]}.*\z/)
+        self.save_address_field(contact, self.full_address(type, "Street"), data["street"])
+        self.save_address_field(contact, self.full_address(type, "City"), data["city"])
+        self.save_address_field(contact, self.full_address(type, "Region"), data["region"])
+        self.save_address_field(contact, self.full_address(type, "Postal Code"), data["zip"])
         return true
-      elsif data = address_field.match(/^?(<street>[\d\-]+\s*[\da-zA-Z]+\s*[a-zA-Z.]+\s(Ave.|Avenue|Rd.|Road|Street|Way|Lane|Ct.|Court))[\s\n]*$/)
-        self.save_address_field(contact, type, "Street", data["street"])
+      elsif data = address_field.match(/\A[\s\n]*#{reg[:street]}[\s\n]*\z/)
+        self.save_address_field(contact, self.full_address(type, "Street"), data["street"])
         return true
-      elsif data = address_field.match(/^\s*(?<zip>\d{5}-\d{4}|\d{5})\s*$/)
-        self.save_address_field(contact, type, "Postal Code", data["zip"])
+      elsif data = address_field.match(/\A\s*#{reg[:zip]}\s*\z/)
+        self.save_address_field(contact, self.full_address(type, "Postal Code"), data["zip"])
         return true
-      elsif data = address_field.match(/^(?<city>[a-zA-Z\s]*)[,\s]+(?<region>[a-zA-Z]{1}\.?[a-zA-Z]{1}\.?)[,\s]+(?<zip>\d{5}-\d{4}|\d{5})$/)
-        self.save_address_field(contact, type, "City", data["city"])
-        self.save_address_field(contact, type, "Region", data["region"])
-        self.save_address_field(contact, type, "Postal Code", data["zip"])
+      elsif data = address_field.match(/\A[\s\n]*#{reg[:city]}[,\s]+#{reg[:region]}[,\s]+#{reg[:zip]}.*\z/)
+        self.save_address_field(contact, self.full_address(type, "City"), data["city"])
+        self.save_address_field(contact, self.full_address(type, "Region"), data["region"])
+        self.save_address_field(contact, self.full_address(type, "Postal Code"), data["zip"])
         return true
-      elsif data = address_field.match(/^(?<pobox>P\.?O\.?\s*[Bb]ox\s*\d{3,4})\s*$/)
-        self.save_address_field(contact, type, "PO Box", data["pobox"])
+      elsif data = address_field.match(/\A[\s\n]*#{reg[:po_box]}[\s\n]*\z/)
+        self.save_address_field(contact, self.full_address(type, "PO Box"), data["pobox"])
         return true
-      elsif data = address_field.match(/^(?<pobox>P\.?O\.?\s*[Bb]ox\s*\d{1,10})[,\s]+(?<city>[a-zA-Z]*)[,\s]+(?<region>[a-zA-Z]{1}\.?[a-zA-Z]{1}\.?)[,\s]+(?<zip>\d{5}-\d{4}|\d{5})$/)
-        self.save_address_field(contact, type, "PO Box", data["pobox"])
-        self.save_address_field(contact, type, "City", data["city"])
-        self.save_address_field(contact, type, "Region", data["region"])
-        self.save_address_field(contact, type, "Postal Code", data["zip"])
+      elsif data = address_field.match(/\A[\s\n]*#{reg[:po_box]}[\s\n]*#{reg[:street]}[,\s\n]*\z/)
+        self.save_address_field(contact, self.full_address(type, "PO Box"), data["pobox"])
+        self.save_address_field(contact, self.full_address(type, "Street"), data["street"])
+        return true
+      elsif data = address_field.match(/\A(?<pobox>P\.?O\.?\s*[Bb]ox\s*\d{1,10})[,\s]+#{reg[:city]}[,\s]+#{reg[:region]}[,\s]+#{reg[:zip]}\z/)
+        self.save_address_field(contact, self.full_address(type, "PO Box"), data["pobox"])
+        self.save_address_field(contact, self.full_address(type, "City"), data["city"])
+        self.save_address_field(contact, self.full_address(type, "Region"), data["region"])
+        self.save_address_field(contact, self.full_address(type, "Postal Code"), data["zip"])
         return true
       end
     end
     return false
   end
 
-  def self.save_address_field(contact, address_type, field_type, value)
+  def self.full_address(address_type, field_type)
     if address_type == "home"
-      Util.set_value_if_nil(contact, "Address 2 - #{field_type}", value)
+      "Address 2 - #{field_type}"
     elsif address_type == "work"
-      Util.set_value_if_nil(contact, "Address 1 - #{field_type}", value)
+      "Address 1 - #{field_type}"
     else
-      Util.set_value_if_nil(contact, "Address 3 - #{field_type}", value)
+      "Address 3 - #{field_type}"
     end
+  end
+
+  def self.save_address_field(contact, full_address_field, value)
+    Util.set_value_if_nil(contact, full_address_field, value)
+  end
+
+  def self.save_address_field_force(contact, address_type, field_type, value)
+
   end
 
 end
