@@ -7,11 +7,6 @@ module Constants
   STRUC_FIELDS = YAML.load(File.open(File.expand_path('../config/structured.yaml', __FILE__)))
   COMPARISON = YAML.load(File.open(File.expand_path('../config/comparison.yaml', __FILE__)))
   SHORTNAMES = YAML.load(File.open(File.expand_path('../config/shortnames.yaml', __FILE__)))
-  SA_ADDRESSES = YAML.load(File.open(File.expand_path('../config/sageact_addresses.yaml', __FILE__)))
-  SA_STRUC = YAML.load(File.open(File.expand_path('../config/sageact_struc_addresses.yaml', __FILE__)))
-  SA_STRUC_ADDRESSES = SA_STRUC["addresses"]
-  SA_STRUC_EXTENSIONS = SA_STRUC["phones"]["extensions"]
-  SA_STRUC_DELETE = SA_STRUC_ADDRESSES.values.flatten + SA_STRUC_EXTENSIONS.keys + ['SA - Alternate Phone']
 
   EMAILS = Hash[FIELDS["emails"]["value"].zip(FIELDS["emails"]["type"])]
   WEBSITES = Hash[FIELDS["websites"]["value"].zip(FIELDS["websites"]["type"])]
@@ -28,5 +23,15 @@ module Constants
   UNIQUE_HEADERS =  G_HEADERS - FIELDS["phones"]["type"] - FIELDS["phones"]["value"] - FIELDS["websites"]["type"] - FIELDS["websites"]["value"] - FIELDS["addresses"]["type"]- FIELDS["addresses"]["formatted"]- FIELDS["addresses"]["type"]- FIELDS["addresses"]["street"]- FIELDS["addresses"]["city"]- FIELDS["addresses"]["pobox"]- FIELDS["addresses"]["region"]- FIELDS["addresses"]["postal_code"]- FIELDS["addresses"]["country"]- FIELDS["addresses"]["extended"]- FIELDS["emails"]["type"] - FIELDS["emails"]["value"]
 
   ALL_CARDSCAN_FIELDS = YAML.load(File.open(File.expand_path('../config/cardscan.yaml', __FILE__))).keys + YAML.load(File.open(File.expand_path('../config/mystery.yaml', __FILE__))).keys
+
+  # All structured addresses
+  SA_STRUC = YAML.load(File.open(File.expand_path('../config/sageact_struc_addresses.yaml', __FILE__)))
+  SA_STRUC_ADDRESSES = SA_STRUC["addresses"]
+  SA_STRUC_EXTENSIONS = SA_STRUC["phones"]["extensions"]
+  SA_STRUC_DELETE = SA_STRUC_ADDRESSES.values.flatten + SA_STRUC_EXTENSIONS.keys + ['SA - Alternate Phone']
+  CS_STRUC_ADDRESSES = YAML.load(File.open(File.expand_path('../config/cardscan_struc_addresses.yaml', __FILE__)))
+  CS_STRUC_DELETE = CS_STRUC_ADDRESSES.values.flatten
+  IC_STRUC_ADDRESSES = YAML.load(File.open(File.expand_path('../config/icloud_struc_addresses.yaml', __FILE__)))
+  IC_STRUC_DELETE = IC_STRUC_ADDRESSES.values.flatten
 
 end

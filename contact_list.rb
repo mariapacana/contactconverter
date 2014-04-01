@@ -8,7 +8,7 @@ require_relative 'row'
 require_relative 'column'
 require_relative 'constants'
 require_relative 'header'
-require_relative 'sageact'
+require_relative 'sorter'
 require_relative 'contact_csv'
 
 class ContactList
@@ -21,7 +21,7 @@ class ContactList
   include Constants
   include Header
   include ContactCSV
-  include Sageact
+  include Sorter
 
   def initialize(args)
     if args[:config_file].nil?
@@ -75,21 +75,20 @@ class ContactList
 
   def fix_sageact
     @contacts.each do |contact|
-      Sageact.sort_addresses(contact)
-      Sageact.sort_extensions(contact)
+      Sorter.sort_addresses(contact, SA_STRUC_ADDRESSES)
+      Sorter.sort_extensions(contact, SA_STRUC_EXTENSIONS)
     end
     SA_STRUC_DELETE.each{|addy| @contacts.delete(addy)}
   end
 
   def format_list
-    add_id_column unless @source_type == "icloud"
-    fix_sageact if @source_type == "sageact"
     process_fields
     remove_sparse_contacts
   end
 
   def remove_and_process_duplicate_contacts(field)
     raise(ArgumentError, "field must be a header") unless G_HEADERS.include?(field)
+    add_id_column
     field_hash = remove_duplicate_contacts(field)
     save_to_file("#{@source_type}_no_#{field}_dups.csv")
     Column.process_duplicate_contacts(field_hash, field)
@@ -138,7 +137,7 @@ class ContactList
     def add_id_column
       id = 0
       @contacts.each do |contact|
-        contact["ID"] = id
+        contact["ID"] = id unless !Util.nil_or_empty?(contact["ID"])
         id += 1
       end
     end

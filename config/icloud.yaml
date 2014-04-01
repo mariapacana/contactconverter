@@ -12,13 +12,13 @@
 'business_fax': 'Phone 5 - Value'
 'pager': 'Phone 4 - Value'
 'mobile_phone': 'Phone 2 - Value'
-'Home Address': 'Address 1 - Street'
-'Home Address2': 'IC - Home Address2'
+# 'Home Address':
+# 'Home Address2':
 'Home Address City': 'Address 1 - City'
 'Home Address State': 'Address 1 - Region'
 'Home Address PostCode': 'Address 1 - Postal Code'
 'Home Address Country': 'Address 1 - Country'
-'Business Address': 'Address 2 - Street'
+# 'Business Address': ''
 # 'Business Address2': ''
 'Business Address City': 'Address 2 - City'
 'Business Address State': 'Address 2 - Region'
