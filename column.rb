@@ -1,8 +1,10 @@
-require File.expand_path('../util.rb', __FILE__)
+require_relative 'util'
+require_relative 'constants'
 require 'pry'
 
 module Column
   include Util
+  include Constants
 
   def self.process_duplicate_contacts(field_hash, field)
     contacts_arry = self.merge_duplicated_contacts(field_hash.values)

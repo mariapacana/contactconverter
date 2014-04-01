@@ -40,7 +40,6 @@ module Row
     end
   end
 
-
   ## Had to replace \\n with \n.\. If we decide to save the data,
   ## will have to use String#scan.
   def self.standardize_notes(contact)

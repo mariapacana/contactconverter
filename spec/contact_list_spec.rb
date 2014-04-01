@@ -86,7 +86,7 @@ describe ContactList do
   end
 
   describe "#remove_duplicate_contacts" do
-    xit "should save contacts duplicated by email into a hash and return it" do
+    it "should save contacts duplicated by email into a hash and return it" do
       email_hash = dups.remove_duplicate_contacts("E-mail 1 - Value")
       email_hash.keys.size.should eq(2)
       phone_hash = dups.remove_duplicate_contacts("Phone 1 - Value")

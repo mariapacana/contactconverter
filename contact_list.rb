@@ -149,15 +149,17 @@ class ContactList
     def add_id_column
       id = 0
       @contacts.each do |contact|
-        contact["ID"] = id unless !Util.nil_or_empty?(contact["ID"])
+        contact["ID"] = id.to_s unless !Util.nil_or_empty?(contact["ID"])
         id += 1
       end
     end
 
     def process_fields
       @contacts.each do |contact|
-        Row.get_phone_types(contact) if source_file_not_google
-        Row.standardize_phones(contact, FIELDS["phones"]["value"])
+        if source_file_not_google
+          Row.get_phone_types(contact)
+          Row.standardize_phones(contact, FIELDS["phones"]["value"])
+        end
         Row.remove_duplicates(STRUC_EMAILS, contact)
         Row.remove_duplicates(STRUC_WEBSITES, contact)
         Row.remove_duplicates(STRUC_PHONES, contact)

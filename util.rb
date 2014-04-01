@@ -1,4 +1,8 @@
+require_relative 'constants'
+
 module Util
+
+  include Constants
 
   def self.nil_or_empty?(value)
     value.nil? || value == "" || value.empty?
