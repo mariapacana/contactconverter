@@ -45,7 +45,7 @@ module Row
   def self.standardize_notes(contact)
     cardscan_regexp = /^(#{ALL_CARDSCAN_FIELDS.join("|")}):\s.*$/
     if !Util.nil_or_empty?(contact["Notes"])  
-      contact["Notes"] = contact["Notes"].gsub(/\\n/, "\n").gsub(cardscan_regexp, "").gsub(/\n+/, "\n")
+      contact["Notes"] = contact["Notes"].gsub(/\\n/, "\n").gsub(cardscan_regexp, "").gsub(/\n+/, "\n").strip.split("\n").uniq.join("\n")
     end
   end
 

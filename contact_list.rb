@@ -37,7 +37,7 @@ class ContactList
                                 headers: true, 
                                 header_converters: change_headers)
       delete_blank_non_google_columns
-      @contacts = Header.headers_in_order(@contacts)
+      @contacts = Header.headers_in_order(@contacts, @source_type)
     end
   end
 
@@ -103,7 +103,7 @@ class ContactList
     add_id_column
     field_hash = remove_duplicate_contacts(field)
     save_to_file("#{@source_type}_no_#{field}_dups.csv")
-    Column.process_duplicate_contacts(field_hash, field)
+    Column.process_duplicate_contacts(field_hash, field, @source_type, headers)
   end
 
   def remove_duplicate_contacts(field)

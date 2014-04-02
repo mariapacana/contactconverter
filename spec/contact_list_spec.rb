@@ -38,7 +38,7 @@ describe ContactList do
       before(:each) do 
         dups.remove_and_process_duplicate_contacts("E-mail 1 - Value")
       end
-      let(:email_dups) {CSV.read(File.open(File.expand_path("../_E-mail 1 - Value_duplicates.csv", "__FILE__")), headers: true)}
+      let(:email_dups) {CSV.read(File.open(File.expand_path("../google_E-mail 1 - Value_duplicates.csv", "__FILE__")), headers: true)}
 
       it "removes email duplicates from list of contacts" do
         dups.contacts["E-mail 1 - Value"].should include("sally@whelk.com")
@@ -57,7 +57,7 @@ describe ContactList do
       before(:each) do 
         dups.remove_and_process_duplicate_contacts("Phone 1 - Value")
       end
-      let(:phone_dups) {CSV.read(File.open(File.expand_path("../_Phone 1 - Value_duplicates.csv", "__FILE__")), headers: true)}
+      let(:phone_dups) {CSV.read(File.open(File.expand_path("../google_Phone 1 - Value_duplicates.csv", "__FILE__")), headers: true)}
       it "removes phone duplicates from list of contacts" do
         dups.contacts["Name"].should_not include("Edgar Thistledown")
       end
@@ -77,7 +77,7 @@ describe ContactList do
       before(:each) do
         sageact_dups.remove_and_process_duplicate_contacts("E-mail 1 - Value")
       end
-      let(:email_dups) {CSV.read(File.open(File.expand_path("../_E-mail 1 - Value_duplicates.csv", "__FILE__")), headers: true)}
+      let(:email_dups) {CSV.read(File.open(File.expand_path("../google_E-mail 1 - Value_duplicates.csv", "__FILE__")), headers: true)}
       it "should merge together emails" do
         email_dups.size.should eq(1)
         sageact_dups.contacts.size.should eq(2)

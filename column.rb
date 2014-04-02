@@ -6,14 +6,14 @@ module Column
   include Util
   include Constants
 
-  def self.process_duplicate_contacts(field_hash, field)
-    contacts_arry = self.merge_duplicated_contacts(field_hash.values)
+  def self.process_duplicate_contacts(field_hash, field, source_type, headers)
+    contacts_arry = self.merge_duplicated_contacts(field_hash.values, headers)
     table = Util.convert_contact_arry_to_csv(contacts_arry)
-    Util.write_csv_to_file("#{@source_type}_#{field}_duplicates.csv", table)
+    Util.write_csv_to_file("#{source_type}_#{field}_duplicates.csv", table)
     table
   end
 
-  def self.merge_duplicated_contacts(dup_contacts_array)
+  def self.merge_duplicated_contacts(dup_contacts_array, headers)
     dup_contacts_array.map do |contact_table|
       new_contact = {}
       self.remove_field_dups(STRUC_PHONES, contact_table, new_contact)
@@ -21,7 +21,7 @@ module Column
       self.remove_field_dups(STRUC_WEBSITES, contact_table, new_contact)
       self.remove_field_dups(STRUC_ADDRESSES, contact_table, new_contact)
       self.remove_field_dups(STRUC_ADDRESSES, contact_table, new_contact)
-      self.merge_headers(UNIQUE_HEADERS, contact_table, new_contact)
+      self.merge_headers(headers - NON_UNIQUE_FIELDS, contact_table, new_contact)
       new_contact
     end
   end

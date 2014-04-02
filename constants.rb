@@ -20,9 +20,9 @@ module Constants
 
   FIRST_EMAIL = FIELDS["emails"]["value"][0]
 
-  UNIQUE_HEADERS =  G_HEADERS - FIELDS["phones"]["type"] - FIELDS["phones"]["value"] - FIELDS["websites"]["type"] - FIELDS["websites"]["value"] - FIELDS["addresses"]["type"]- FIELDS["addresses"]["formatted"]- FIELDS["addresses"]["type"]- FIELDS["addresses"]["street"]- FIELDS["addresses"]["city"]- FIELDS["addresses"]["pobox"]- FIELDS["addresses"]["region"]- FIELDS["addresses"]["postal_code"]- FIELDS["addresses"]["country"]- FIELDS["addresses"]["extended"]- FIELDS["emails"]["type"] - FIELDS["emails"]["value"]
+  NON_UNIQUE_FIELDS = FIELDS["phones"]["type"]+FIELDS["phones"]["value"]+FIELDS["websites"]["type"]+FIELDS["websites"]["value"]+FIELDS["addresses"]["type"]+FIELDS["addresses"]["formatted"]+FIELDS["addresses"]["type"]+FIELDS["addresses"]["street"]+FIELDS["addresses"]["city"]+FIELDS["addresses"]["pobox"]+FIELDS["addresses"]["region"]+FIELDS["addresses"]["postal_code"]+FIELDS["addresses"]["country"]+FIELDS["addresses"]["extended"]+FIELDS["emails"]["type"]+FIELDS["emails"]["value"]
 
-  ALL_CARDSCAN_FIELDS = YAML.load(File.open(File.expand_path('../config/cardscan.yaml', __FILE__))).keys + YAML.load(File.open(File.expand_path('../config/mystery.yaml', __FILE__))).keys
+  ALL_CARDSCAN_FIELDS = YAML.load(File.open(File.expand_path('../config/cardscan.yaml', __FILE__))).keys + YAML.load(File.open(File.expand_path('../config/mystery.yaml', __FILE__))).keys + ['Address_Line_2', '2nd_Address_Line_2', 'Categories']
 
   # All structured addresses
   STRUC = YAML.load(File.open(File.expand_path('../config/struc_addresses.yaml', __FILE__)))

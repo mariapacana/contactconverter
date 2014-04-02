@@ -78,8 +78,8 @@ describe Row do
     let(:mudgeon) {notes_unformatted[2]}
     it "removes all the externally added fields from the notes" do
       notes_unformatted.each {|c| Row.standardize_notes(c)}
-      larry["Notes"].should eq("# 7306 LEASING\n")
-      phil["Notes"].should eq("# 464\n")
+      larry["Notes"].should eq("# 7306 LEASING")
+      phil["Notes"].should eq("# 464")
       mudgeon["Notes"].should eq("# 543\n# 54\nLooking for an 8' slider 12/12/2048")
     end 
   end
