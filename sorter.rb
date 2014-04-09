@@ -120,8 +120,4 @@ module Sorter
     Util.set_value_if_nil(contact, full_address_field, value)
   end
 
-  def self.save_address_field_force(contact, address_type, field_type, value)
-
-  end
-
 end

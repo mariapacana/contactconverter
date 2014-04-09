@@ -91,6 +91,8 @@ describe Row do
     let(:website_dups) {duplicates[2]}
     let(:email_dups_no_types) {duplicates[3]}
     let(:address_dups) {duplicates[4]}
+    let(:address_dups_2) {duplicates[5]}
+    let(:address_dups_3) {duplicates[6]}
     it "removes duplicate emails" do
       Row.remove_duplicates(STRUC_EMAILS, email_dups)
       Row.remove_duplicates(STRUC_EMAILS, email_dups_no_types)
@@ -112,7 +114,21 @@ describe Row do
       address_dups["Address 2 - Country"].should be_empty
       address_dups["Address 2 - Postal Code"].should be_empty
     end
-
+    it "collapses addresses that are subsets of other addresses" do
+      Row.remove_duplicates(STRUC_ADDRESSES, address_dups_2)
+      Row.remove_duplicates(STRUC_ADDRESSES, address_dups_3)
+      address_dups_2["Address 1 - Street"].should eq("1 Squid Lane")
+      address_dups_2["Address 1 - City"].should eq("Kelp City")
+      address_dups_2["Address 1 - Region"].should eq("Seaside")
+      address_dups_2["Address 1 - Postal Code"].should eq("93523")
+      address_dups_2["Address 1 - Country"].should eq("USA")
+      address_dups_3["Address 1 - Street"].should eq("3 Mystery Mansion")
+      address_dups_3["Address 1 - City"].should eq("Rocket")
+      address_dups_3["Address 2 - Region"].should eq("")
+      address_dups_3["Address 2 - Country"].should eq("")
+      address_dups_3["Address 3 - Region"].should eq("")
+      address_dups_3["Address 3 - Country"].should eq("")
+    end
   end
 
   describe "knows when contacts have enough information" do

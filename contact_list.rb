@@ -102,7 +102,6 @@ class ContactList
     raise(ArgumentError, "field must be a header") unless G_HEADERS.include?(field)
     add_id_column
     field_hash = remove_duplicate_contacts(field)
-    save_to_file("#{@source_type}_no_#{field}_dups.csv")
     Column.process_duplicate_contacts(field_hash, field, @source_type, headers)
   end
 

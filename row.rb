@@ -113,7 +113,7 @@ module Row
   end
 
   def self.set_fields(struc_fields, field_hash, contact)
-    unique_vals = field_hash.keys.uniq
+    unique_vals = self.unique_vals(field_hash)
     unique_vals.each {|val| val.unshift(field_hash[val]) }
 
     local_struc_fields = struc_fields.dup
@@ -124,6 +124,18 @@ module Row
       end
       local_struc_fields.delete(field)
     end
+  end
+
+  def self.unique_vals(field_hash)
+    fields = field_hash.keys
+    (0..fields.size-1).each do |index|
+      (0..fields.size-1).each do |comp|
+        if (fields[comp] - fields[index]).empty? && comp != index
+          field_hash.delete(fields[comp])
+        end
+      end
+    end
+    field_hash.keys
   end
 
   def self.value_subfields(contact, subfields)
