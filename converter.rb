@@ -16,7 +16,7 @@ def combine_and_convert
   all[1..-1].each {|list| google << list}
 
   puts "saving to file..."
-  google.save_to_file("all_contacts_before.csv")
+  google.save_to_file("all_contacts_merged.csv")
 
   puts "deduping emails..."
   google.remove_and_process_duplicate_contacts("E-mail 1 - Value")

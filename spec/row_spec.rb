@@ -11,7 +11,7 @@ describe Row do
 
   let (:phone_headers) {FIELDS["phones"]["value"].zip(FIELDS["phones"]["type"]).flatten}
   let (:contact_1) {CSV::Row.new(phone_headers, ["(312) 838-3923", nil, "(312) 838-3923", nil, "(312) 838-3443", nil,"(312) 234-3237", nil,"(312) 658-3923", nil,])}
-  let (:bad_email) {CSV::Row.new(FIELDS["emails"]["value"], ["'>,Mugwump Gundrun' <Mugwump.Gundrun@'@smtp5.homesteadmail.com", nil, nil, nil])}
+  let (:bad_email) {CSV::Row.new(FIELDS["emails"]["value"], ["'>,Mugwump Gundrun' <Mugwump.Gundrun@'@smtp5.Homesteadmail.com", nil, nil, nil])}
   let (:good_email) {CSV::Row.new(FIELDS["emails"]["value"], ["hey@there.com", "so@what.com", nil, nil])}
 
   describe "#get_phone_types" do
@@ -19,13 +19,13 @@ describe Row do
       Row.get_phone_types(contact_1)
     end
     it "assigns phone types given values" do
-      contact_1["Phone 2 - Type"].should eq("mobile")
-      contact_1["Phone 3 - Type"].should eq("home")
-      contact_1["Phone 4 - Type"].should eq("pager")
-      contact_1["Phone 5 - Type"].should eq("fax")
+      contact_1["Phone 2 - Type"].should eq("Mobile")
+      contact_1["Phone 3 - Type"].should eq("Home")
+      contact_1["Phone 4 - Type"].should eq("Pager")
+      contact_1["Phone 5 - Type"].should eq("Fax")
     end
     it "assigns phone 1's phone type based on info from elsewhere" do
-      contact_1["Phone 1 - Type"].should eq("mobile")
+      contact_1["Phone 1 - Type"].should eq("Mobile")
     end
   end
 
@@ -97,7 +97,7 @@ describe Row do
       Row.remove_duplicates(STRUC_EMAILS, email_dups)
       Row.remove_duplicates(STRUC_EMAILS, email_dups_no_types)
       email_dups["E-mail 1 - Value"].should eq("myrtle@wood.com")
-      email_dups["E-mail 1 - Type"].should eq("home\nbusiness")
+      email_dups["E-mail 1 - Type"].should eq("Home\nBusiness")
       email_dups["E-mail 2 - Value"].should eq("pacificsunrise@coast.com")
       email_dups_no_types["E-mail 1 - Value"].should eq("support@suppot.net")
     end
@@ -105,7 +105,7 @@ describe Row do
       Row.standardize_phones(phone_dups, FIELDS["phones"]["value"])
       Row.remove_duplicates(STRUC_PHONES, phone_dups)
       phone_dups["Phone 1 - Value"].should eq("+13125835832")
-      phone_dups["Phone 1 - Type"].should eq("mobile\nhome")
+      phone_dups["Phone 1 - Type"].should eq("Mobile\nHome")
       phone_dups["Phone 2 - Value"].should eq("+18439992842")
     end
     it "removes duplicate addresses" do

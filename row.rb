@@ -9,20 +9,29 @@ module Row
   include Constants
 
   def self.get_phone_types(contact)
-    contact['Phone 2 - Type'] = 'mobile' if contact.has_field?('Phone 2 - Value')
-    contact['Phone 3 - Type'] = 'home' if contact.has_field?('Phone 3 - Value')
-    contact['Phone 4 - Type'] = 'pager' if contact.has_field?('Phone 4 - Value')
-    contact['Phone 5 - Type'] = 'fax' if contact.has_field?('Phone 5 - Value')
+    contact['Phone 2 - Type'] = 'Mobile' if contact.has_field?('Phone 2 - Value')
+    contact['Phone 3 - Type'] = 'Home' if contact.has_field?('Phone 3 - Value')
+    contact['Phone 4 - Type'] = 'Pager' if contact.has_field?('Phone 4 - Value')
+    contact['Phone 5 - Type'] = 'Fax' if contact.has_field?('Phone 5 - Value')
 
     if !Util.nil_or_empty?(contact['Phone 1 - Value'])
       if contact['Phone 1 - Value'] == contact['Phone 2 - Value']
-        contact['Phone 1 - Type'] = 'mobile'
+        contact['Phone 1 - Type'] = 'Mobile'
       elsif contact['Phone 1 - Value'] == contact['Phone 3 - Value']
-        contact['Phone 1 - Type'] = 'home'
+        contact['Phone 1 - Type'] = 'Home'
       elsif contact['Phone 1 - Value'] == contact['Phone 4 - Value']
-        contact['Phone 1 - Type'] = 'pager'
+        contact['Phone 1 - Type'] = 'Pager'
+      elsif contact['Phone 1 - Value'] == contact['Phone 4 - Value']
+        contact['Phone 1 - Type'] = 'Fax'
+      else
+        contact['Phone 1 - Type'] = 'Main'
       end
     end
+  end
+
+  def split_google_fields(contact)
+    # if google, split on :::
+    # assign type to both of the values
   end
 
   def self.standardize_phones(contact, fields)

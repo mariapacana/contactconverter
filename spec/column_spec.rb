@@ -23,8 +23,8 @@ describe Column do
       it "should de-duplicate phone types" do
         phone_types = Set.new ([new_contact["Phone 1 - Type"], new_contact["Phone 2 - Type"]])
         phone_types.size.should eq(2)
-        phone_types.member?("mobile").should eq(true)
-        phone_types.member?("home").should eq(true)
+        phone_types.member?("Mobile").should eq(true)
+        phone_types.member?("Home").should eq(true)
       end
     end
     context "in the case of addresses" do
