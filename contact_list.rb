@@ -93,7 +93,7 @@ class ContactList
   end
 
   def format_list
-    sort_address_fields if source_file_not_google
+    sort_address_fields if @source_type != "google"
     process_fields
     remove_sparse_contacts
   end
@@ -125,10 +125,6 @@ class ContactList
       end
     end
 
-    def source_file_not_google
-      @source_type != "google"
-    end
-
     def delete_blank_columns(my_headers)
       my_headers.each do |header|
         if @contacts[header].uniq.size < 3 && header != "Gender"
@@ -138,7 +134,7 @@ class ContactList
     end
 
     def delete_blank_non_google_columns
-      delete_blank_columns(non_google_columns) if source_file_not_google
+      delete_blank_columns(non_google_columns) if @source_type != "google"
     end
 
     def non_google_columns
@@ -155,10 +151,9 @@ class ContactList
 
     def process_fields
       @contacts.each do |contact|
-        if source_file_not_google
-          Row.get_phone_types(contact)
-          Row.standardize_phones(contact, FIELDS["phones"]["value"])
-        end
+        Row.get_phone_types(contact) if @source_type != "google"
+        Row.standardize_google(contact) if @source_type == "google"
+        Row.standardize_phones(contact, FIELDS["phones"]["value"])
         Row.remove_duplicates(STRUC_EMAILS, contact)
         Row.remove_duplicates(STRUC_WEBSITES, contact)
         Row.remove_duplicates(STRUC_PHONES, contact)

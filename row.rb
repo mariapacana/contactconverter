@@ -29,9 +29,20 @@ module Row
     end
   end
 
-  def split_google_fields(contact)
-    # if google, split on :::
-    # assign type to both of the values
+  def self.standardize_google(contact)
+    google_fields = STRUC_PHONES.merge(STRUC_ADDRESSES)
+    new_vals = []
+    google_fields.each do |field, subfields|
+      subfield_type = subfields[0]
+      subvalues = self.value_subfields(contact, subfields)
+      if Util.field_not_empty?(subvalues)
+        subvalues.map! {|v| v.split(" ::: ") if !Util.nil_or_empty?(v)}
+        until subvalues.select {|ary| !Util.nil_or_empty?(ary)}.empty?
+          new_vals << subvalues.map {|v| Util.nil_or_empty?(v) ? "" : v.shift}.unshift(contact[subfield_type])
+        end
+      end 
+    end
+    self.set_fields(google_fields, new_vals.uniq, contact)
   end
 
   def self.standardize_phones(contact, fields)
@@ -104,7 +115,7 @@ module Row
 
   def self.remove_duplicates(struc_fields, contact)
     hashy = self.get_hash(contact, struc_fields)
-    self.set_fields(struc_fields, hashy, contact)
+    self.assign_vals_to_fields(struc_fields, hashy, contact)
   end
 
   def self.get_hash(contact, struc_fields)
@@ -121,10 +132,13 @@ module Row
     Util.join_hash_values(field_hash)
   end
 
-  def self.set_fields(struc_fields, field_hash, contact)
+  def self.assign_vals_to_fields(struc_fields, field_hash, contact)
     unique_vals = self.unique_vals(field_hash)
     unique_vals.each {|val| val.unshift(field_hash[val]) }
+    self.set_fields(struc_fields, unique_vals, contact)
+  end
 
+  def self.set_fields(struc_fields, unique_vals, contact)
     local_struc_fields = struc_fields.dup
     local_struc_fields.each do |field, subfields|
       next_val = unique_vals.shift || []

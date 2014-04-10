@@ -84,6 +84,24 @@ describe Row do
     end 
   end
 
+  describe "#standardize_google" do
+    let(:duplicates) {CSV.read(File.open(File.expand_path("../fixtures/contact_duplicates.csv", __FILE__)), headers: true)}
+    let(:google_phone_dups) {duplicates[7]}
+    it "collapses google phone dups" do
+      Row.standardize_google(google_phone_dups)
+      google_phone_dups["Phone 1 - Value"].should eq("545-356-3222")
+      google_phone_dups["Phone 1 - Type"].should eq("Mobile")
+      google_phone_dups["Phone 2 - Value"].should eq("545-135-2352")
+      google_phone_dups["Phone 2 - Type"].should eq("Mobile")
+      google_phone_dups["Phone 3 - Value"].should eq("535-632-4313")
+      google_phone_dups["Phone 3 - Type"].should eq("Home")
+      google_phone_dups["Phone 4 - Value"].should eq("678-124-2342")
+      google_phone_dups["Phone 4 - Type"].should eq("Home")
+      google_phone_dups["Phone 5 - Value"].should eq("2-345-345-5243")
+      google_phone_dups["Phone 5 - Type"].should eq("Home")
+    end
+  end
+
   describe "removes duplicate email, phone, website info from rows" do
     let(:duplicates) {CSV.read(File.open(File.expand_path("../fixtures/contact_duplicates.csv", __FILE__)), headers: true)}
     let(:email_dups) {duplicates[0]}
@@ -93,6 +111,7 @@ describe Row do
     let(:address_dups) {duplicates[4]}
     let(:address_dups_2) {duplicates[5]}
     let(:address_dups_3) {duplicates[6]}
+
     it "removes duplicate emails" do
       Row.remove_duplicates(STRUC_EMAILS, email_dups)
       Row.remove_duplicates(STRUC_EMAILS, email_dups_no_types)

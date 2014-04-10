@@ -32,7 +32,7 @@ module Column
 
   def self.remove_field_dups(struc_fields, contact_table, new_contact)
     field_hash = self.get_hash(contact_table, struc_fields)
-    Row.set_fields(struc_fields, field_hash, new_contact)
+    Row.assign_vals_to_fields(struc_fields, field_hash, new_contact)
   end
 
   def self.get_hash(contact_table, struc_fields)
