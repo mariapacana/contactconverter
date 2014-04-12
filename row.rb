@@ -8,6 +8,16 @@ module Row
   include Util
   include Constants
 
+  def self.strip_fields(contact)
+    contact.headers.each {|h| contact[h] = contact[h].strip if !Util.nil_or_empty?(contact[h])}
+  end
+
+  def self.remove_colons(struc_fields, contact)
+    struc_fields.values.flatten.each do |val|
+      contact[val] = contact[val].gsub(":::", "").strip
+    end
+  end
+
   def self.get_phone_types(contact)
     contact['Phone 2 - Type'] = 'Mobile' if contact.has_field?('Phone 2 - Value')
     contact['Phone 3 - Type'] = 'Home' if contact.has_field?('Phone 3 - Value')
@@ -29,10 +39,9 @@ module Row
     end
   end
 
-  def self.standardize_google(contact)
-    google_fields = STRUC_PHONES.merge(STRUC_ADDRESSES)
+  def self.standardize_google(struc_fields, contact)
     new_vals = []
-    google_fields.each do |field, subfields|
+    struc_fields.each do |field, subfields|
       subfield_type = subfields[0]
       subvalues = self.value_subfields(contact, subfields)
       if Util.field_not_empty?(subvalues)
@@ -42,7 +51,8 @@ module Row
         end
       end 
     end
-    self.set_fields(google_fields, new_vals.uniq, contact)
+    self.set_fields(struc_fields, new_vals.uniq, contact)
+    self.remove_colons(struc_fields, contact)
   end
 
   def self.standardize_phones(contact, fields)
@@ -120,7 +130,6 @@ module Row
 
   def self.get_hash(contact, struc_fields)
     field_hash = {}
-
     struc_fields.each do |field, subfields|
       subfield_type = subfields[0]
       subvalues = self.value_subfields(contact, subfields)
@@ -128,7 +137,6 @@ module Row
         Util.add_value_to_hash(field_hash, subvalues,contact[subfield_type])
       end
     end
-
     Util.join_hash_values(field_hash)
   end
 

@@ -84,11 +84,22 @@ describe Row do
     end 
   end
 
+  describe "#strip_fields" do
+    let (:padded_fields) {CSV::Row.new(["Family Name", "Given Name", "E-mail 1 - Value"], ["  Loy ", "Myrna      ", "  whiffle"])}
+    it "removes padding from fields" do
+      Row.strip_fields(padded_fields)
+      padded_fields["Family Name"].should eq("Loy")
+      padded_fields["Given Name"].should eq("Myrna")
+    end
+  end
+
   describe "#standardize_google" do
     let(:duplicates) {CSV.read(File.open(File.expand_path("../fixtures/contact_duplicates.csv", __FILE__)), headers: true)}
     let(:google_phone_dups) {duplicates[7]}
+    let(:google_colons) {duplicates[8]}
     it "collapses google phone dups" do
-      Row.standardize_google(google_phone_dups)
+      Row.standardize_google(STRUC_PHONES, google_phone_dups)
+      Row.standardize_google(STRUC_ADDRESSES, google_colons)
       google_phone_dups["Phone 1 - Value"].should eq("545-356-3222")
       google_phone_dups["Phone 1 - Type"].should eq("Mobile")
       google_phone_dups["Phone 2 - Value"].should eq("545-135-2352")
@@ -99,6 +110,8 @@ describe Row do
       google_phone_dups["Phone 4 - Type"].should eq("Home")
       google_phone_dups["Phone 5 - Value"].should eq("2-345-345-5243")
       google_phone_dups["Phone 5 - Type"].should eq("Home")
+      google_colons["Address 1 - City"].should eq("Grand Rapids")
+      google_colons["Address 1 - Region"].should eq("MI")
     end
   end
 
@@ -111,6 +124,7 @@ describe Row do
     let(:address_dups) {duplicates[4]}
     let(:address_dups_2) {duplicates[5]}
     let(:address_dups_3) {duplicates[6]}
+    let(:address_dups_4) {duplicates[8]}
 
     it "removes duplicate emails" do
       Row.remove_duplicates(STRUC_EMAILS, email_dups)
