@@ -27,7 +27,7 @@ module Column
   end
 
   def self.merge_headers(headers, contact_table, new_contact)
-    headers.each {|h| new_contact[h] = contact_table[h].uniq.join("\n")}
+    headers.each {|h| new_contact[h] = contact_table[h].map {|c| c.strip if !Util.nil_or_empty?(c)}.uniq.join("\n")}
   end
 
   def self.remove_field_dups(struc_fields, contact_table, new_contact)
