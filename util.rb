@@ -15,7 +15,7 @@ module Util
   def self.join_hash_values(my_hash)
     my_hash.each do |key, value|
       if value.uniq.size > 1
-        my_hash[key] = value.join("\n")
+        my_hash[key] = value.uniq.join("\n")
       elsif value.uniq.size == 1
         my_hash[key] = value.uniq[0]
       else
