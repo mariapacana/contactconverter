@@ -177,11 +177,11 @@ describe Sorter do
       let (:ext2) {CSV::Row.new(['Phone 1 - Value', 'Phone 2 - Value', 'SA - Alternate Phone', 'SA - Alternate Extension'], ['', '', '773-333-4444', '2343'])}
       it "sticks the extension on the phone" do
         Sorter.sort_extensions(ext1, SA_STRUC_EXTENSIONS)
-        ext1['Phone 2 - Value'].should eq('773-333-4444 Extension: 2343')
+        ext1['Phone 2 - Value'].should eq('773-333-4444 Ext. 2343')
       end
       it "assigns the alternate phone to a blank phone" do
         Sorter.sort_extensions(ext2, SA_STRUC_EXTENSIONS)
-        ext2['Phone 1 - Value'].should eq('773-333-4444 Extension: 2343')
+        ext2['Phone 1 - Value'].should eq('773-333-4444 Ext. 2343')
       end
     end
   end

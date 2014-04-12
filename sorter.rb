@@ -11,12 +11,12 @@ module Sorter
   def self.sort_extensions(contact, struc_extensions)
     struc_extensions.each do |ext, phone|
       unless ext == 'SA - Alternate Extension'
-        contact[phone] = "#{contact[phone]} Extension: #{contact[ext]}" if !Util.nil_or_empty?(contact[ext])
+        contact[phone] = "#{contact[phone]} Ext. #{contact[ext]}" if !Util.nil_or_empty?(contact[ext])
       end
     end
     if !Util.nil_or_empty?(contact['SA - Alternate Phone'])
       if !Util.nil_or_empty?(contact['SA - Alternate Extension'])
-        alternate = "#{contact['SA - Alternate Phone']} Extension: #{contact['SA - Alternate Extension']}"
+        alternate = "#{contact['SA - Alternate Phone']} Ext. #{contact['SA - Alternate Extension']}"
       else
         alternate = contact['SA - Alternate Phone']
       end

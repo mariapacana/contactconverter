@@ -10,30 +10,38 @@ include Constants
 describe Row do
 
   let (:phone_headers) {FIELDS["phones"]["value"].zip(FIELDS["phones"]["type"]).flatten}
-  let (:contact_1) {CSV::Row.new(phone_headers, ["(312) 838-3923", nil, "(312) 838-3923", nil, "(312) 838-3443", nil,"(312) 234-3237", nil,"(312) 658-3923", nil,])}
+  let (:phone_1) {CSV::Row.new(phone_headers, ["(312) 838-3923", nil, "(312) 838-3923", nil, "(312) 838-3443", nil,"(312) 234-3237", nil,"(312) 658-3923", nil,])}
+  let (:phone_2) {CSV::Row.new(phone_headers, ["999-999-9999 ext. 9999", nil, "9-999-999-999e, ext.t9999", nil, "99-999-9999 Ext. 999,", nil,"(999) 999-9999 EXT 999", nil,"999-999-9999 Ext 9", nil,])}
   let (:bad_email) {CSV::Row.new(FIELDS["emails"]["value"], ["'>,Mugwump Gundrun' <Mugwump.Gundrun@'@smtp5.Homesteadmail.com", nil, nil, nil])}
   let (:good_email) {CSV::Row.new(FIELDS["emails"]["value"], ["hey@there.com", "so@what.com", nil, nil])}
 
   describe "#get_phone_types" do
     before(:each) do
-      Row.get_phone_types(contact_1)
+      Row.get_phone_types(phone_1)
     end
     it "assigns phone types given values" do
-      contact_1["Phone 2 - Type"].should eq("Mobile")
-      contact_1["Phone 3 - Type"].should eq("Home")
-      contact_1["Phone 4 - Type"].should eq("Pager")
-      contact_1["Phone 5 - Type"].should eq("Fax")
+      phone_1["Phone 2 - Type"].should eq("Mobile")
+      phone_1["Phone 3 - Type"].should eq("Home")
+      phone_1["Phone 4 - Type"].should eq("Pager")
+      phone_1["Phone 5 - Type"].should eq("Fax")
     end
     it "assigns phone 1's phone type based on info from elsewhere" do
-      contact_1["Phone 1 - Type"].should eq("Mobile")
+      phone_1["Phone 1 - Type"].should eq("Mobile")
     end
   end
 
   describe "fixes phones and emails" do
     it "should put phones in format +19995558888" do
-      Row.standardize_phones(contact_1, ["Phone 2 - Value", "Phone 3 - Value"])
-      contact_1["Phone 2 - Value"].should eq("+13128383923")
-      contact_1["Phone 3 - Value"].should eq("+13128383443")
+      Row.standardize_phones(phone_1, ["Phone 2 - Value", "Phone 3 - Value"])
+      phone_1["Phone 2 - Value"].should eq("+13128383923")
+      phone_1["Phone 3 - Value"].should eq("+13128383443")
+    end
+    it "should deal with extensions reasonably" do
+      Row.standardize_phones(phone_2, ["Phone 1 - Value", "Phone 2 - Value", "Phone 3 - Value", "Phone 4 - Value", "Phone 5 - Value"])
+      phone_2["Phone 1 - Value"].should eq("+19999999999 Ext. 9999")
+      phone_2["Phone 2 - Value"].should eq("+19999999999 Ext. 9999")
+      phone_2["Phone 3 - Value"].should eq("999999999 Ext. 999")
+      phone_2["Phone 4 - Value"].should eq("+19999999999 Ext. 999")
     end
     it "can flag emails that aren't blah@blah.com" do
       Row.invalid_email(bad_email, FIELDS["emails"]["value"]).should eq(true)
