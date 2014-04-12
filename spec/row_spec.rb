@@ -88,7 +88,7 @@ describe Row do
     let(:duplicates) {CSV.read(File.open(File.expand_path("../fixtures/contact_duplicates.csv", __FILE__)), headers: true)}
     let(:google_phone_dups) {duplicates[7]}
     it "collapses google phone dups" do
-      Row.standardize_google(google_phone_dups)
+      Row.standardize_google(STRUC_PHONES, google_phone_dups)
       google_phone_dups["Phone 1 - Value"].should eq("545-356-3222")
       google_phone_dups["Phone 1 - Type"].should eq("Mobile")
       google_phone_dups["Phone 2 - Value"].should eq("545-135-2352")

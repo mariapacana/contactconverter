@@ -8,6 +8,10 @@ module Row
   include Util
   include Constants
 
+  def self.strip_fields(contact)
+    contact.headers.each {|h| contact[h] = contact[h].strip if !Util.nil_or_empty?(contact[h])}
+  end
+
   def self.get_phone_types(contact)
     contact['Phone 2 - Type'] = 'Mobile' if contact.has_field?('Phone 2 - Value')
     contact['Phone 3 - Type'] = 'Home' if contact.has_field?('Phone 3 - Value')
@@ -29,10 +33,9 @@ module Row
     end
   end
 
-  def self.standardize_google(contact)
-    google_fields = STRUC_PHONES.merge(STRUC_ADDRESSES)
+  def self.standardize_google(struc_fields, contact)
     new_vals = []
-    google_fields.each do |field, subfields|
+    struc_fields.each do |field, subfields|
       subfield_type = subfields[0]
       subvalues = self.value_subfields(contact, subfields)
       if Util.field_not_empty?(subvalues)
@@ -42,7 +45,7 @@ module Row
         end
       end 
     end
-    self.set_fields(google_fields, new_vals.uniq, contact)
+    self.set_fields(struc_fields, new_vals.uniq, contact)
   end
 
   def self.standardize_phones(contact, fields)

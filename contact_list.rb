@@ -151,12 +151,14 @@ class ContactList
 
     def process_fields
       @contacts.each do |contact|
+        Row.strip_fields(contact)
         Row.get_phone_types(contact) if @source_type != "google"
-        Row.standardize_google(contact) if @source_type == "google"
+        Row.standardize_google(STRUC_PHONES, contact) if @source_type == "google"
         Row.standardize_phones(contact, FIELDS["phones"]["value"])
         Row.remove_duplicates(STRUC_EMAILS, contact)
         Row.remove_duplicates(STRUC_WEBSITES, contact)
         Row.remove_duplicates(STRUC_PHONES, contact)
+        Row.standardize_google(STRUC_ADDRESSES, contact) if @source_type == "google"
         Row.remove_duplicates(STRUC_ADDRESSES, contact)
         Row.delete_invalid_names(contact)
         Row.move_contact_name(contact)
