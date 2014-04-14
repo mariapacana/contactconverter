@@ -57,7 +57,7 @@ class ContactList
   def <<(other_contact_list)
     raise(TypeError, "argument must be a ContactList") unless other_contact_list.class == ContactList
 
-    combined_headers = headers && other_contact_list.headers
+    combined_headers = headers & other_contact_list.headers
     new_headers = combined_headers - headers
     add_new_headers(new_headers)
 
@@ -68,28 +68,7 @@ class ContactList
     end
 
     new_contacts.each {|row| @contacts << row}
-  end
-
-  def add_new_headers(new_headers)
-    new_headers.each {|h| @contacts.each {|c| c[h] = "" } }
-  end
-
-  def sort_address_fields
-    @contacts.each do |contact|
-      Sorter.sort_addresses(contact, STRUC[@source_type]["addresses"])
-      Sorter.sort_extensions(contact, STRUC[@source_type]["extensions"]) if @source_type == "sageact"
-    end
-    headers_to_delete.each{|addy| @contacts.delete(addy)}
-  end
-
-  def headers_to_delete
-    if @source_type != 'sageact'
-      STRUC[@source_type]["addresses"].values.flatten
-    elsif @source_type == 'sageact'
-      STRUC[@source_type]["addresses"].values.flatten + SA_STRUC_EXTENSIONS.keys + ['SA - Alternate Phone']
-    else
-      raise(Error, 'this must be a non-google list')
-    end
+    self
   end
 
   def format_list
@@ -141,6 +120,28 @@ class ContactList
       headers.select{|h| h.match(SHORTNAMES[@source_type])}
     end
 
+    def add_new_headers(new_headers)
+      new_headers.each {|h| @contacts.each {|c| c[h] = "" } }
+    end
+
+    def sort_address_fields
+      @contacts.each do |contact|
+        Sorter.sort_addresses(contact, STRUC[@source_type]["addresses"])
+        Sorter.sort_extensions(contact, STRUC[@source_type]["extensions"]) if @source_type == "sageact"
+      end
+      headers_to_delete.each{|addy| @contacts.delete(addy)}
+    end
+
+    def headers_to_delete
+      if @source_type != 'sageact'
+        STRUC[@source_type]["addresses"].values.flatten
+      elsif @source_type == 'sageact'
+        STRUC[@source_type]["addresses"].values.flatten + SA_STRUC_EXTENSIONS.keys + ['SA - Alternate Phone']
+      else
+        raise(Error, 'this must be a non-google list')
+      end
+    end
+
     def add_id_column
       id = 0
       @contacts.each do |contact|
@@ -155,6 +156,7 @@ class ContactList
         Row.get_phone_types(contact) if @source_type != "google"
         Row.standardize_google(STRUC_PHONES, contact) if @source_type == "google"
         Row.standardize_google(STRUC_ADDRESSES, contact) if @source_type == "google"
+        Row.standardize_google(STRUC_EMAILS, contact) if @source_type == "google"
         Row.standardize_phones(contact, FIELDS["phones"]["value"])
         Row.delete_invalid_names(contact)
         Row.move_contact_name(contact)

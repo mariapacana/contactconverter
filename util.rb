@@ -17,7 +17,7 @@ module Util
   end
 
   def self.join_and_strip_uniques(uniques)
-    uniques.join("\n").strip
+    uniques.map{|u| u.strip}.join("\n").strip
   end
 
   def self.set_value_if_nil(my_hash, my_key, new_value)

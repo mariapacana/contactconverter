@@ -106,6 +106,7 @@ describe Row do
     let(:google_phone_dups) {duplicates[7]}
     let(:google_colons) {duplicates[8]}
     let(:google_longnums) {duplicates[9]}
+    let(:google_emails) {duplicates[10]}
     it "collapses google phone dups" do
       Row.standardize_google(STRUC_PHONES, google_phone_dups)
       Row.standardize_google(STRUC_ADDRESSES, google_colons)
@@ -125,6 +126,12 @@ describe Row do
     it "can deal with very long numbers" do
       Row.standardize_google(STRUC_PHONES, google_longnums)
       Row.standardize_phones(google_longnums, FIELDS["phones"]["value"])
+      google_longnums["Phone 4 - Value"].should eq("'86769226913022269130322612663")
+    end
+    it "can split apart emails" do
+      Row.standardize_google(STRUC_EMAILS, google_emails)
+      google_emails["E-mail 1 - Value"].should eq("whim@whick.com")
+      google_emails["E-mail 2 - Value"].should eq("whim@whuff.com")
     end
   end
 

@@ -8,9 +8,9 @@ module Column
 
   def self.process_duplicate_contacts(field_hash, field, source_type, headers)
     contacts_arry = self.merge_duplicated_contacts(field_hash.values, headers)
-    table = Util.convert_contact_arry_to_csv(contacts_arry, headers)
-    Util.write_csv_to_file("#{source_type}_#{field}_duplicates.csv", table)
-    table
+    dups = Util.convert_contact_arry_to_csv(contacts_arry, headers)
+    Util.write_csv_to_file("#{source_type}_#{field}_duplicates.csv", dups)
+    dups
   end
 
   def self.merge_duplicated_contacts(dup_contacts_array, headers)
@@ -27,15 +27,15 @@ module Column
     end
   end
 
-  def self.merge_unique_fields(headers, contact_table, new_contact)
-    headers.each do |h| 
-      new_contact[h] = Util.join_and_format_uniques(contact_table[h])
-    end
-  end
-
   def self.remove_field_dups(struc_fields, contact_table, new_contact)
     field_hash = self.get_hash(contact_table, struc_fields)
     Row.assign_vals_to_fields(struc_fields, field_hash, new_contact)
+  end
+
+  def self.merge_unique_fields(headers, contact_table, new_contact)
+    headers.each do |h|
+      new_contact[h] = Util.join_and_format_uniques(contact_table[h])
+    end
   end
 
   def self.get_hash(contact_table, struc_fields)
