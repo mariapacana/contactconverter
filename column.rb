@@ -21,13 +21,16 @@ module Column
       self.remove_field_dups(STRUC_WEBSITES, contact_table, new_contact)
       self.remove_field_dups(STRUC_ADDRESSES, contact_table, new_contact)
       self.remove_field_dups(STRUC_ADDRESSES, contact_table, new_contact)
-      self.merge_headers(headers - NON_UNIQUE_FIELDS, contact_table, new_contact)
+      self.merge_unique_fields(headers - NON_UNIQUE_FIELDS, contact_table, new_contact)
+      Row.standardize_notes(new_contact)
       new_contact
     end
   end
 
-  def self.merge_headers(headers, contact_table, new_contact)
-    headers.each {|h| new_contact[h] = contact_table[h].map {|c| c.strip if !Util.nil_or_empty?(c)}.uniq.join("\n")}
+  def self.merge_unique_fields(headers, contact_table, new_contact)
+    headers.each do |h| 
+      new_contact[h] = Util.join_and_format_uniques(contact_table[h])
+    end
   end
 
   def self.remove_field_dups(struc_fields, contact_table, new_contact)

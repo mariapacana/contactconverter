@@ -50,9 +50,8 @@ module Sorter
 
   def self.sort_address(contact, type, address_array)
     addresses = address_array.map {|a| contact[a]}
-    new_street_vals = addresses.map {|a| self.return_address(contact, type, a)} << contact[self.full_address(type, "Street")]
-    new_vals =  new_street_vals.select! {|val| !Util.nil_or_empty?(val)}.uniq
-    contact[self.full_address(type, "Street")] = new_vals.join("\n")
+    new_vals = addresses.map {|a| self.return_address(contact, type, a)} << contact[self.full_address(type, "Street")]
+    contact[self.full_address(type, "Street")] = Util.join_and_format_uniques(new_vals)
   end
 
   def self.should_print(contact, type, address)

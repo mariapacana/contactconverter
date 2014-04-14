@@ -8,6 +8,18 @@ module Util
     value.nil? || value == "" || value.empty?
   end
 
+  def self.join_and_format_uniques(enum)
+    self.join_and_strip_uniques(self.uniq_not_nil(enum))
+  end
+
+  def self.uniq_not_nil(enum)
+    enum.uniq.delete_if {|e| self.nil_or_empty?(e)}
+  end
+
+  def self.join_and_strip_uniques(uniques)
+    uniques.join("\n").strip
+  end
+
   def self.set_value_if_nil(my_hash, my_key, new_value)
     my_hash[my_key] = new_value if self.nil_or_empty?(my_hash[my_key])
   end
@@ -15,7 +27,7 @@ module Util
   def self.join_hash_values(my_hash)
     my_hash.each do |key, value|
       if value.uniq.size > 1
-        my_hash[key] = value.uniq.join("\n")
+        my_hash[key] = self.join_and_format_uniques(value)
       elsif value.uniq.size == 1
         my_hash[key] = value.uniq[0]
       else

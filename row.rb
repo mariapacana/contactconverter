@@ -82,8 +82,9 @@ module Row
   ## will have to use String#scan.
   def self.standardize_notes(contact)
     cardscan_regexp = /^(#{ALL_CARDSCAN_FIELDS.join("|")}):\s.*$/
-    if !Util.nil_or_empty?(contact["Notes"])  
-      contact["Notes"] = contact["Notes"].gsub(/\\n/, "\n").gsub(cardscan_regexp, "").gsub(/\n+/, "\n").strip.split("\n").uniq.join("\n")
+    if !Util.nil_or_empty?(contact["Notes"])
+      values = contact["Notes"].gsub(cardscan_regexp, "").strip.split("\n")
+      contact["Notes"] = Util.join_and_format_uniques(values)
     end
   end
 
