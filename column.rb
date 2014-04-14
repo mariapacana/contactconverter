@@ -8,7 +8,7 @@ module Column
 
   def self.process_duplicate_contacts(field_hash, field, source_type, headers)
     contacts_arry = self.merge_duplicated_contacts(field_hash.values, headers)
-    table = Util.convert_contact_arry_to_csv(contacts_arry)
+    table = Util.convert_contact_arry_to_csv(contacts_arry, headers)
     Util.write_csv_to_file("#{source_type}_#{field}_duplicates.csv", table)
     table
   end

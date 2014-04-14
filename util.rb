@@ -48,12 +48,12 @@ module Util
     end
   end
 
-  def self.convert_contact_arry_to_csv(contacts_arry)
+  def self.convert_contact_arry_to_csv(contacts_arry, headers)
     rows = []
     contacts_arry.each do |contact|
       field_arry = []
-      G_HEADERS.each {|header| field_arry << contact[header] || nil }
-      rows << CSV::Row.new(G_HEADERS, field_arry)
+      headers.each {|header| field_arry << contact[header] || nil }
+      rows << CSV::Row.new(headers, field_arry)
     end
     table = CSV::Table.new(rows)
   end
