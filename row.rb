@@ -62,7 +62,7 @@ module Row
         if p = phone.match(/(?<phone>[\d\-\.\s\(\)]+)(e, ext.t|\sExt\s|\sEXT\s|\sExt.\s|\sext.\s)(?<extension>[\d]+).*/)
           contact[field]= "#{self.fix_phone_number(p[:phone])} Ext. #{p[:extension]}"
         else
-          contact[field] = self.fix_phone_number(phone)
+          contact[field] = "#{self.fix_phone_number(phone)}"
         end 
       end
     end
@@ -71,6 +71,7 @@ module Row
   def self.fix_phone_number(phone)
     phone.gsub!(/(\D)/,"")
     phone.insert(0, '1') if phone.length == 10
+    phone.insert(0, "\'")
     phone
   end
 

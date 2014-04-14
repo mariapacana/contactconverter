@@ -12,7 +12,6 @@ describe Row do
   let (:phone_headers) {FIELDS["phones"]["value"].zip(FIELDS["phones"]["type"]).flatten}
   let (:phone_1) {CSV::Row.new(phone_headers, ["(312) 838-3923", nil, "(312) 838-3923", nil, "(312) 838-3443", nil,"(312) 234-3237", nil,"(312) 658-3923", nil,])}
   let (:phone_2) {CSV::Row.new(phone_headers, ["999-999-9999 ext. 9999", nil, "9-999-999-999e, ext.t9999", nil, "99-999-9999 Ext. 999,", nil,"(999) 999-9999 EXT 999", nil,"999-999-9999 Ext 9", nil,])}
-  let (:phone_3) {CSV::Row.new(phone_headers, ["0-117-692-269-1302 ::: +86 769 2220 9893 ::: 011-867-692-220-9893 ::: +86769226913022269130322612663", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil])}
   let (:bad_email) {CSV::Row.new(FIELDS["emails"]["value"], ["'>,Mugwump Gundrun' <Mugwump.Gundrun@'@smtp5.Homesteadmail.com", nil, nil, nil])}
   let (:good_email) {CSV::Row.new(FIELDS["emails"]["value"], ["hey@there.com", "so@what.com", nil, nil])}
 
@@ -34,15 +33,15 @@ describe Row do
   describe "fixes phones and emails" do
     it "should put phones in format +19995558888" do
       Row.standardize_phones(phone_1, ["Phone 2 - Value", "Phone 3 - Value"])
-      phone_1["Phone 2 - Value"].should eq("13128383923")
-      phone_1["Phone 3 - Value"].should eq("13128383443")
+      phone_1["Phone 2 - Value"].should eq("'13128383923")
+      phone_1["Phone 3 - Value"].should eq("'13128383443")
     end
     it "should deal with extensions reasonably" do
       Row.standardize_phones(phone_2, ["Phone 1 - Value", "Phone 2 - Value", "Phone 3 - Value", "Phone 4 - Value", "Phone 5 - Value"])
-      phone_2["Phone 1 - Value"].should eq("19999999999 Ext. 9999")
-      phone_2["Phone 2 - Value"].should eq("19999999999 Ext. 9999")
-      phone_2["Phone 3 - Value"].should eq("999999999 Ext. 999")
-      phone_2["Phone 4 - Value"].should eq("19999999999 Ext. 999")
+      phone_2["Phone 1 - Value"].should eq("'19999999999 Ext. 9999")
+      phone_2["Phone 2 - Value"].should eq("'19999999999 Ext. 9999")
+      phone_2["Phone 3 - Value"].should eq("'999999999 Ext. 999")
+      phone_2["Phone 4 - Value"].should eq("'19999999999 Ext. 999")
     end
     it "can flag emails that aren't blah@blah.com" do
       Row.invalid_email(bad_email, FIELDS["emails"]["value"]).should eq(true)
@@ -106,6 +105,7 @@ describe Row do
     let(:duplicates) {CSV.read(File.open(File.expand_path("../fixtures/contact_duplicates.csv", __FILE__)), headers: true)}
     let(:google_phone_dups) {duplicates[7]}
     let(:google_colons) {duplicates[8]}
+    let(:google_longnums) {duplicates[9]}
     it "collapses google phone dups" do
       Row.standardize_google(STRUC_PHONES, google_phone_dups)
       Row.standardize_google(STRUC_ADDRESSES, google_colons)
@@ -121,6 +121,10 @@ describe Row do
       google_phone_dups["Phone 5 - Type"].should eq("Home")
       google_colons["Address 1 - City"].should eq("Grand Rapids")
       google_colons["Address 1 - Region"].should eq("MI")
+    end
+    it "can deal with very long numbers" do
+      Row.standardize_google(STRUC_PHONES, google_longnums)
+      Row.standardize_phones(google_longnums, FIELDS["phones"]["value"])
     end
   end
 
@@ -146,9 +150,9 @@ describe Row do
     it "removes duplicate phones" do
       Row.standardize_phones(phone_dups, FIELDS["phones"]["value"])
       Row.remove_duplicates(STRUC_PHONES, phone_dups)
-      phone_dups["Phone 1 - Value"].should eq("13125835832")
+      phone_dups["Phone 1 - Value"].should eq("'13125835832")
       phone_dups["Phone 1 - Type"].should eq("Mobile\nHome")
-      phone_dups["Phone 2 - Value"].should eq("18439992842")
+      phone_dups["Phone 2 - Value"].should eq("'18439992842")
     end
     it "removes duplicate addresses" do
       Row.remove_duplicates(STRUC_ADDRESSES, address_dups)
