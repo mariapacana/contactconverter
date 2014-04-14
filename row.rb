@@ -59,22 +59,18 @@ module Row
     fields.each do |field|
       phone = contact[field]
       if !Util.nil_or_empty?(phone)
-        if p = phone.match(/(?<phone>[\d\-\.\s\(\)]+)(e, ext.t|\sExt\s|\sEXT\s|\sExt.\s|\sext.\s)(?<extension>[\d]+)/)
+        if p = phone.match(/(?<phone>[\d\-\.\s\(\)]+)(e, ext.t|\sExt\s|\sEXT\s|\sExt.\s|\sext.\s)(?<extension>[\d]+).*/)
           contact[field]= "#{self.fix_phone_number(p[:phone])} Ext. #{p[:extension]}"
         else
           contact[field] = self.fix_phone_number(phone)
-        end
+        end 
       end
     end
   end
 
   def self.fix_phone_number(phone)
     phone.gsub!(/(\D)/,"")
-    if phone.length == 11
-      phone.insert(0, '+')
-    elsif phone.length == 10
-      phone.insert(0, '+1') 
-    end
+    phone.insert(0, '1') if phone.length == 10
     phone
   end
 
