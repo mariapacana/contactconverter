@@ -9,7 +9,7 @@ module Row
   include Constants
 
   def self.strip_fields(contact)
-    contact.headers.each {|h| contact[h] = contact[h].strip if !Util.nil_or_empty?(contact[h])}
+    contact.headers.each {|h| contact[h] = contact[h].strip.gsub(/\\n/, "\n") if !Util.nil_or_empty?(contact[h])}
   end
 
   def self.remove_colons(struc_fields, contact)

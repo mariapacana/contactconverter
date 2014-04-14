@@ -96,11 +96,11 @@ class ContactList
     sort_address_fields if @source_type != "google"
     process_fields
     remove_sparse_contacts
+    add_id_column
   end
 
   def remove_and_process_duplicate_contacts(field)
     raise(ArgumentError, "field must be a header") unless G_HEADERS.include?(field)
-    add_id_column
     field_hash = remove_duplicate_contacts(field)
     Column.process_duplicate_contacts(field_hash, field, @source_type, headers)
   end
@@ -154,16 +154,16 @@ class ContactList
         Row.strip_fields(contact)
         Row.get_phone_types(contact) if @source_type != "google"
         Row.standardize_google(STRUC_PHONES, contact) if @source_type == "google"
-        Row.standardize_phones(contact, FIELDS["phones"]["value"])
-        Row.remove_duplicates(STRUC_EMAILS, contact)
-        Row.remove_duplicates(STRUC_WEBSITES, contact)
-        Row.remove_duplicates(STRUC_PHONES, contact)
         Row.standardize_google(STRUC_ADDRESSES, contact) if @source_type == "google"
-        Row.remove_duplicates(STRUC_ADDRESSES, contact)
+        Row.standardize_phones(contact, FIELDS["phones"]["value"])
         Row.delete_invalid_names(contact)
         Row.move_contact_name(contact)
         Row.make_name(contact)
         Row.standardize_notes(contact)
+        Row.remove_duplicates(STRUC_EMAILS, contact)
+        Row.remove_duplicates(STRUC_WEBSITES, contact)
+        Row.remove_duplicates(STRUC_PHONES, contact)
+        Row.remove_duplicates(STRUC_ADDRESSES, contact)
       end
     end
 
