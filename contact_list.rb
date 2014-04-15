@@ -45,6 +45,10 @@ class ContactList
     @contacts.headers
   end
 
+  def size
+    @contacts.size
+  end
+
   def save_to_file(filename)
     CSV.open(filename, "wb") do |csv|
       csv << headers
@@ -57,16 +61,15 @@ class ContactList
   def <<(other_contact_list)
     raise(TypeError, "argument must be a ContactList") unless other_contact_list.class == ContactList
 
-    combined_headers = headers & other_contact_list.headers
-    new_headers = combined_headers - headers
-    add_new_headers(new_headers)
+    shared_headers = headers & other_contact_list.headers
+    new_headers = headers + (other_contact_list.headers - shared_headers)
+    @contacts = Header.add_missing_headers(new_headers, @contacts)
 
     new_contacts = []
     other_contact_list.contacts.each do |contact|
-      contact_arry = headers.map {|h| contact[h] || ""}
-      new_contacts << CSV::Row.new(headers, contact_arry)
+      contact_arry = new_headers.map {|h| contact[h] || ""}
+      new_contacts << CSV::Row.new(new_headers, contact_arry)
     end
-
     new_contacts.each {|row| @contacts << row}
     self
   end
@@ -75,7 +78,16 @@ class ContactList
     sort_address_fields if @source_type != "google"
     process_fields
     remove_sparse_contacts
-    add_id_column
+  end
+
+  def add_id_column
+    id = 0
+    @contacts.each do |contact|
+      if Util.nil_or_empty?(contact["ID"])
+        id += 1
+        contact["ID"] = id.to_s
+      end
+    end
   end
 
   def remove_and_process_duplicate_contacts(field)
@@ -120,10 +132,6 @@ class ContactList
       headers.select{|h| h.match(SHORTNAMES[@source_type])}
     end
 
-    def add_new_headers(new_headers)
-      new_headers.each {|h| @contacts.each {|c| c[h] = "" } }
-    end
-
     def sort_address_fields
       @contacts.each do |contact|
         Sorter.sort_addresses(contact, STRUC[@source_type]["addresses"])
@@ -139,14 +147,6 @@ class ContactList
         STRUC[@source_type]["addresses"].values.flatten + SA_STRUC_EXTENSIONS.keys + ['SA - Alternate Phone']
       else
         raise(Error, 'this must be a non-google list')
-      end
-    end
-
-    def add_id_column
-      id = 0
-      @contacts.each do |contact|
-        contact["ID"] = id.to_s unless !Util.nil_or_empty?(contact["ID"])
-        id += 1
       end
     end
 

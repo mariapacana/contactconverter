@@ -15,6 +15,9 @@ def combine_and_convert
   puts "merging all lists..."
   all[1..-1].each {|list| google << list}
 
+  puts "adding ID column..."
+  google.add_id_column
+
   puts "saving to file..."
   google.save_to_file("all_contacts_merged.csv")
 
