@@ -187,7 +187,6 @@ class ContactList
       field_hash
     end
 
-
     def extract_duplicates!(field, field_hash)
       field_hash.select! do |field_val, contact|
         contact.size > 1 && !Util.nil_or_empty?(field_val) && ContactCSV.similarity_tests(field, COMPARISON[field], contact)

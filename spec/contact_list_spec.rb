@@ -23,76 +23,76 @@ describe ContactList do
     sageact_dups.format_list
   end
 
-  describe "#initialize" do
-    it "should put everything in a Google header format" do
-      (G_HEADERS - icloud.headers).should be_empty
-    end
-    it "should put ID first" do
-      icloud.headers[0] == "ID"
-    end
-    it "should put Notes last" do
-      icloud.headers[-1] == "Notes"
-    end
-    it "should delete all headers that are empty" do
-      icloud.headers.should_not include("IC - caluri")
-      icloud.headers.should_not include("IC - Birth Year")
-      icloud.headers.should include("IC - wants_html")
-    end
-  end
+  # describe "#initialize" do
+  #   it "should put everything in a Google header format" do
+  #     (G_HEADERS - icloud.headers).should be_empty
+  #   end
+  #   it "should put ID first" do
+  #     icloud.headers[0] == "ID"
+  #   end
+  #   it "should put Notes last" do
+  #     icloud.headers[-1] == "Notes"
+  #   end
+  #   it "should delete all headers that are empty" do
+  #     icloud.headers.should_not include("IC - caluri")
+  #     icloud.headers.should_not include("IC - Birth Year")
+  #     icloud.headers.should include("IC - wants_html")
+  #   end
+  # end
 
-  describe "<<" do
-    before(:each) do
-      shared_headers = icloud.headers & sageact.headers
-      @new_headers = icloud.headers + (sageact.headers - shared_headers)
-    end
-    let (:new_icloud) {icloud << sageact}
-    it "should merge together the headers" do
-      new_icloud.headers.sort.should eq(@new_headers.sort)
-    end
-    it "should have ID as the first header and Notes as the last" do
-      new_icloud.headers[0] == "ID"
-      new_icloud.headers[-1] == "Notes"
-    end
-    it "should have the same number of contacts" do
-      (new_icloud.size).should eq(6)
-    end
-    context "when given invalid args" do
-      it "should raise error" do
-        expect{icloud << "whimper"}.to raise_error
-      end
-    end
-  end
+  # describe "<<" do
+  #   before(:each) do
+  #     shared_headers = icloud.headers & sageact.headers
+  #     @new_headers = icloud.headers + (sageact.headers - shared_headers)
+  #   end
+  #   let (:new_icloud) {icloud << sageact}
+  #   it "should merge together the headers" do
+  #     new_icloud.headers.sort.should eq(@new_headers.sort)
+  #   end
+  #   it "should have ID as the first header and Notes as the last" do
+  #     new_icloud.headers[0] == "ID"
+  #     new_icloud.headers[-1] == "Notes"
+  #   end
+  #   it "should have the same number of contacts" do
+  #     (new_icloud.size).should eq(6)
+  #   end
+  #   context "when given invalid args" do
+  #     it "should raise error" do
+  #       expect{icloud << "whimper"}.to raise_error
+  #     end
+  #   end
+  # end
 
-  describe "#format_list" do
-    before(:each) { icloud.format_list }
-    it "should sort the address fields" do
-      icloud.contacts[0]["Address 1 - Street"].should eq("360 Asteroid Terrace\nBelgrade")
-      icloud.contacts[0]["Address 1 - Type"].should eq("Home")
-      icloud.contacts[1]["Address 1 - Street"].should eq("69 Sasquatch Lane")
-      icloud.contacts[1]["Address 1 - PO Box"].should eq("PO Box 340")
-      icloud.contacts[1]["Address 1 - Type"].should eq("Home")
-    end
-    it "should consolidate emails" do
-      icloud.contacts[0]["E-mail 1 - Value"].should eq("moose@goose.com")
-      icloud.contacts[0]["E-mail 2 - Value"].should eq("flax@bax.com")
-      icloud.contacts[0]["E-mail 3 - Value"].should be_empty
-    end
-    it "should remove contacts without enough info" do
-      icloud.contacts["Name"].should_not include("Widgy")
-    end
-    it "should delete headers" do
-      icloud.headers.should_not include("IC - Business Address2")
-      icloud.headers.should_not include("IC - Home Address2")
-    end
-  end
+  # describe "#format_list" do
+  #   before(:each) { icloud.format_list }
+  #   it "should sort the address fields" do
+  #     icloud.contacts[0]["Address 1 - Street"].should eq("360 Asteroid Terrace\nBelgrade")
+  #     icloud.contacts[0]["Address 1 - Type"].should eq("Home")
+  #     icloud.contacts[1]["Address 1 - Street"].should eq("69 Sasquatch Lane")
+  #     icloud.contacts[1]["Address 1 - PO Box"].should eq("PO Box 340")
+  #     icloud.contacts[1]["Address 1 - Type"].should eq("Home")
+  #   end
+  #   it "should consolidate emails" do
+  #     icloud.contacts[0]["E-mail 1 - Value"].should eq("moose@goose.com")
+  #     icloud.contacts[0]["E-mail 2 - Value"].should eq("flax@bax.com")
+  #     icloud.contacts[0]["E-mail 3 - Value"].should be_empty
+  #   end
+  #   it "should remove contacts without enough info" do
+  #     icloud.contacts["Name"].should_not include("Widgy")
+  #   end
+  #   it "should delete headers" do
+  #     icloud.headers.should_not include("IC - Business Address2")
+  #     icloud.headers.should_not include("IC - Home Address2")
+  #   end
+  # end
 
-  describe "#add_id_column" do
-    it "should add ids to columns without any" do
-      icloud.add_id_column
-      icloud.contacts[0]["ID"].should eq("1")
-      icloud.contacts[-1]["ID"].should eq("2")
-    end
-  end
+  # describe "#add_id_column" do
+  #   it "should add ids to columns without any" do
+  #     icloud.add_id_column
+  #     icloud.contacts[0]["ID"].should eq("1")
+  #     icloud.contacts[-1]["ID"].should eq("2")
+  #   end
+  # end
 
   describe "#remove_and_process_duplicate_contacts" do
     context "when stripping email duplicates" do
