@@ -8,16 +8,6 @@ module Row
   include Util
   include Constants
 
-  def self.strip_fields(contact)
-    contact.headers.each {|h| contact[h] = contact[h].strip.gsub(/\\n/, "\n") if !Util.nil_or_empty?(contact[h])}
-  end
-
-  def self.remove_colons(struc_fields, contact)
-    struc_fields.values.flatten.each do |val|
-      contact[val] = contact[val].gsub(":::", "").strip
-    end
-  end
-
   def self.get_phone_types(contact)
     contact['Phone 2 - Type'] = 'Mobile' if contact.has_field?('Phone 2 - Value')
     contact['Phone 3 - Type'] = 'Home' if contact.has_field?('Phone 3 - Value')
@@ -55,6 +45,12 @@ module Row
     self.remove_colons(struc_fields, contact)
   end
 
+  def self.remove_colons(struc_fields, contact)
+    struc_fields.values.flatten.each do |val|
+      contact[val] = contact[val].gsub(":::", "").strip
+    end
+  end
+
   def self.standardize_phones(contact, fields)
     fields.each do |field|
       phone = contact[field]
@@ -83,16 +79,6 @@ module Row
       values = contact["Notes"].gsub(cardscan_regexp, "").strip.split("\n")
       contact["Notes"] = Util.join_and_format_uniques(values)
     end
-  end
-
-  def self.invalid_email(contact, fields)
-    fields.each do |field|
-      valid_email = /^[^\s"';@()><\\]*@{1}{1}[^\s"';@()><\\]*.[^\s"';@()><\\]*$/
-      if !Util.nil_or_empty?(contact[field])
-        return true if !contact[field].match(valid_email)
-      end
-    end
-    return false
   end
 
   def self.delete_invalid_names(contact)
@@ -127,6 +113,10 @@ module Row
         contact["Name"] = "#{contact["Given Name"]} #{contact["Family Name"]}"
       end
     end
+  end
+
+  def self.strip_fields(contact)
+    contact.headers.each {|h| contact[h] = contact[h].strip.gsub(/\\n/, "\n") if !Util.nil_or_empty?(contact[h])}
   end
 
   def self.remove_duplicates(struc_fields, contact)

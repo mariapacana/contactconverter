@@ -30,77 +30,6 @@ describe Row do
     end
   end
 
-  describe "fixes phones and emails" do
-    it "should put phones in format +19995558888" do
-      Row.standardize_phones(phone_1, ["Phone 2 - Value", "Phone 3 - Value"])
-      phone_1["Phone 2 - Value"].should eq("'13128383923")
-      phone_1["Phone 3 - Value"].should eq("'13128383443")
-    end
-    it "should deal with extensions reasonably" do
-      Row.standardize_phones(phone_2, ["Phone 1 - Value", "Phone 2 - Value", "Phone 3 - Value", "Phone 4 - Value", "Phone 5 - Value"])
-      phone_2["Phone 1 - Value"].should eq("'19999999999 Ext. 9999")
-      phone_2["Phone 2 - Value"].should eq("'19999999999 Ext. 9999")
-      phone_2["Phone 3 - Value"].should eq("'999999999 Ext. 999")
-      phone_2["Phone 4 - Value"].should eq("'19999999999 Ext. 999")
-    end
-    it "can flag emails that aren't blah@blah.com" do
-      Row.invalid_email(bad_email, FIELDS["emails"]["value"]).should eq(true)
-      Row.invalid_email(good_email, FIELDS["emails"]["value"]).should eq(false)
-    end
-  end
-
-  describe "can straighten out names" do
-    let (:invalid_given_name) {CSV::Row.new(["Family Name", "Given Name", "E-mail 1 - Value"], ["Smith", "9", nil])}
-    let (:family_name_is_email) {CSV::Row.new(["Family Name", "Given Name", "E-mail 1 - Value"], ["foo@bar.com", nil, nil])}
-    let (:no_given_name) {CSV::Row.new(["Family Name", "Given Name"], ["Smith", ""])}
-    let (:no_name) {CSV::Row.new(["Name", "Family Name", "Given Name"], ["","Smith", "Josh"])}
-    describe "#delete_if_invalid_name" do
-      it "removes names that contain numbers" do
-        Row.delete_if_invalid_name(invalid_given_name, "Given Name")
-        invalid_given_name["Given Name"].should eq("")
-      end
-      it "removes names that are e-mail addresses, and puts them in email fields" do
-        Row.delete_if_invalid_name(family_name_is_email, "Family Name")
-        family_name_is_email["Family Name"].should eq("")
-        family_name_is_email["E-mail 1 - Value"].should eq("foo@bar.com")
-      end
-    end
-    describe "#move_contact_name" do
-      it "changes Given Name to Family Name if there is no Given Name" do
-        Row.move_contact_name(no_given_name)
-        no_given_name["Given Name"].should eq("Smith")
-      end
-    end
-    describe "#make_name" do
-      it "makes Name the Given Name + Family Name" do
-        Row.make_name(no_name)
-        no_name["Name"].should eq("Josh Smith")
-      end
-    end
-  end
-
-  describe "#standardize_notes" do
-    let(:notes_unformatted) {CSV.read(File.open(File.expand_path("../fixtures/notes_strip.csv", __FILE__)), headers: true)}
-    let(:larry) {notes_unformatted[0]}
-    let(:phil) {notes_unformatted[1]}
-    let(:mudgeon) {notes_unformatted[2]}
-    it "removes all the externally added fields from the notes" do
-      notes_unformatted.each {|c| Row.standardize_notes(c)}
-      larry["Notes"].should eq("# 7306 LEASING")
-      phil["Notes"].should eq("# 464")
-      mudgeon["Notes"].should eq("# 543\n# 54\nLooking for an 8' slider 12/12/2048")
-    end 
-  end
-
-  describe "#strip_fields" do
-    let (:padded_fields) {CSV::Row.new(["Family Name", "Given Name", "E-mail 1 - Value"], ["  Loy ", "Myrna      ", "  whiffle"])}
-    it "removes padding from fields" do
-      Row.strip_fields(padded_fields)
-      padded_fields["Family Name"].should eq("Loy")
-      padded_fields["Given Name"].should eq("Myrna")
-    end
-  end
-
   describe "#standardize_google" do
     let(:duplicates) {CSV.read(File.open(File.expand_path("../fixtures/contact_duplicates.csv", __FILE__)), headers: true)}
     let(:google_phone_dups) {duplicates[7]}
@@ -132,6 +61,73 @@ describe Row do
       Row.standardize_google(STRUC_EMAILS, google_emails)
       google_emails["E-mail 1 - Value"].should eq("whim@whick.com")
       google_emails["E-mail 2 - Value"].should eq("whim@whuff.com")
+    end
+  end
+
+  describe "#standardize_phones" do
+    it "should put phones in format +19995558888" do
+      Row.standardize_phones(phone_1, ["Phone 2 - Value", "Phone 3 - Value"])
+      phone_1["Phone 2 - Value"].should eq("'13128383923")
+      phone_1["Phone 3 - Value"].should eq("'13128383443")
+    end
+    it "should deal with extensions reasonably" do
+      Row.standardize_phones(phone_2, ["Phone 1 - Value", "Phone 2 - Value", "Phone 3 - Value", "Phone 4 - Value", "Phone 5 - Value"])
+      phone_2["Phone 1 - Value"].should eq("'19999999999 Ext. 9999")
+      phone_2["Phone 2 - Value"].should eq("'19999999999 Ext. 9999")
+      phone_2["Phone 3 - Value"].should eq("'999999999 Ext. 999")
+      phone_2["Phone 4 - Value"].should eq("'19999999999 Ext. 999")
+    end
+  end
+
+  describe "#standardize_notes" do
+    let(:notes_unformatted) {CSV.read(File.open(File.expand_path("../fixtures/notes_strip.csv", __FILE__)), headers: true)}
+    let(:larry) {notes_unformatted[0]}
+    let(:phil) {notes_unformatted[1]}
+    let(:mudgeon) {notes_unformatted[2]}
+    it "removes all the externally added fields from the notes" do
+      notes_unformatted.each {|c| Row.standardize_notes(c)}
+      larry["Notes"].should eq("# 7306 LEASING")
+      phil["Notes"].should eq("# 464")
+      mudgeon["Notes"].should eq("# 543\n# 54\nLooking for an 8' slider 12/12/2048")
+    end 
+  end
+
+  context "when fixing names" do
+    let (:invalid_given_name) {CSV::Row.new(["Family Name", "Given Name", "E-mail 1 - Value"], ["Smith", "9", nil])}
+    let (:family_name_is_email) {CSV::Row.new(["Family Name", "Given Name", "E-mail 1 - Value"], ["foo@bar.com", nil, nil])}
+    let (:no_given_name) {CSV::Row.new(["Family Name", "Given Name"], ["Smith", ""])}
+    let (:no_name) {CSV::Row.new(["Name", "Family Name", "Given Name"], ["","Smith", "Josh"])}
+    describe "#delete_if_invalid_name" do
+      it "removes names that contain numbers" do
+        Row.delete_if_invalid_name(invalid_given_name, "Given Name")
+        invalid_given_name["Given Name"].should eq("")
+      end
+      it "removes names that are e-mail addresses, and puts them in email fields" do
+        Row.delete_if_invalid_name(family_name_is_email, "Family Name")
+        family_name_is_email["Family Name"].should eq("")
+        family_name_is_email["E-mail 1 - Value"].should eq("foo@bar.com")
+      end
+    end
+    describe "#move_contact_name" do
+      it "changes Given Name to Family Name if there is no Given Name" do
+        Row.move_contact_name(no_given_name)
+        no_given_name["Given Name"].should eq("Smith")
+      end
+    end
+    describe "#make_name" do
+      it "makes Name the Given Name + Family Name" do
+        Row.make_name(no_name)
+        no_name["Name"].should eq("Josh Smith")
+      end
+    end
+  end
+
+  describe "#strip_fields" do
+    let (:padded_fields) {CSV::Row.new(["Family Name", "Given Name", "E-mail 1 - Value"], ["  Loy ", "Myrna      ", "  whiffle"])}
+    it "removes padding from fields" do
+      Row.strip_fields(padded_fields)
+      padded_fields["Family Name"].should eq("Loy")
+      padded_fields["Given Name"].should eq("Myrna")
     end
   end
 

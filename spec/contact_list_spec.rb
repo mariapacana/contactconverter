@@ -27,6 +27,17 @@ describe ContactList do
     it "should put everything in a Google header format" do
       (G_HEADERS - icloud.headers).should be_empty
     end
+    it "should put ID first" do
+      icloud.headers[0] == "ID"
+    end
+    it "should put Notes last" do
+      icloud.headers[-1] == "Notes"
+    end
+    it "should delete all headers that are empty" do
+      icloud.headers.should_not include("IC - caluri")
+      icloud.headers.should_not include("IC - Birth Year")
+      icloud.headers.should include("IC - wants_html")
+    end
   end
 
   describe "<<" do
@@ -36,7 +47,11 @@ describe ContactList do
     end
     let (:new_icloud) {icloud << sageact}
     it "should merge together the headers" do
-      new_icloud.headers.should eq(@new_headers)
+      new_icloud.headers.sort.should eq(@new_headers.sort)
+    end
+    it "should have ID as the first header and Notes as the last" do
+      new_icloud.headers[0] == "ID"
+      new_icloud.headers[-1] == "Notes"
     end
     it "should have the same number of contacts" do
       (new_icloud.size).should eq(6)
@@ -65,9 +80,17 @@ describe ContactList do
     it "should remove contacts without enough info" do
       icloud.contacts["Name"].should_not include("Widgy")
     end
-    xit "should have an id column" do
-      icloud.contacts["ID"].should_not be_empty
-      (icloud.contacts[1]["ID"].to_i - icloud.contacts[0]["ID"].to_i).should eq(1)
+    it "should delete headers" do
+      icloud.headers.should_not include("IC - Business Address2")
+      icloud.headers.should_not include("IC - Home Address2")
+    end
+  end
+
+  describe "#add_id_column" do
+    it "should add ids to columns without any" do
+      icloud.add_id_column
+      icloud.contacts[0]["ID"].should eq("1")
+      icloud.contacts[-1]["ID"].should eq("2")
     end
   end
 
@@ -117,15 +140,6 @@ describe ContactList do
         email_dups.size.should eq(1)
         sageact_dups.contacts.size.should eq(2)
       end
-    end
-  end
-  describe "#remove_duplicate_contacts" do
-    it "should save contacts duplicated by email into a hash and return it" do
-      email_hash = dups.remove_duplicate_contacts("E-mail 1 - Value")
-      email_hash.keys.size.should eq(3)
-      phone_hash = dups.remove_duplicate_contacts("Phone 1 - Value")
-      phone_hash.keys.size.should eq(1)
-      dups.contacts["E-mail 1 - Value"].should_not include("myrtle@wood.com")
     end
   end
 end

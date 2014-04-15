@@ -30,7 +30,7 @@ class ContactList
       @contacts = CSV.read(args[:source_file], headers: true)
     else
       change_headers = lambda do |header|
-        header = @config[header].nil? ? "#{SHORTNAMES[@source_type]} - #{header}" : @config[header]
+        header = Header.change_headers(header, @config, @source_type)
       end
       @config = YAML.load(File.open(args[:config_file])) 
       @contacts = CSV.read(args[:source_file], 
@@ -63,6 +63,7 @@ class ContactList
 
     shared_headers = headers & other_contact_list.headers
     new_headers = headers + (other_contact_list.headers - shared_headers)
+    new_headers = Header.update_ordered_headers(new_headers, @source_type)
     @contacts = Header.add_missing_headers(new_headers, @contacts)
 
     new_contacts = []
@@ -81,11 +82,11 @@ class ContactList
   end
 
   def add_id_column
-    id = 0
+    id = 1
     @contacts.each do |contact|
       if Util.nil_or_empty?(contact["ID"])
-        id += 1
         contact["ID"] = id.to_s
+        id += 1
       end
     end
   end
@@ -94,13 +95,6 @@ class ContactList
     raise(ArgumentError, "field must be a header") unless G_HEADERS.include?(field)
     field_hash = remove_duplicate_contacts(field)
     Column.process_duplicate_contacts(field_hash, field, @source_type, headers)
-  end
-
-  def remove_duplicate_contacts(field)
-    field_hash = make_field_hash(field)
-    extract_duplicates!(field, field_hash)
-    delete_dups_from_contacts!(field_hash)
-    field_hash
   end
 
   private
@@ -116,16 +110,16 @@ class ContactList
       end
     end
 
+    def delete_blank_non_google_columns
+      delete_blank_columns(non_google_columns) if @source_type != "google"
+    end
+
     def delete_blank_columns(my_headers)
       my_headers.each do |header|
         if @contacts[header].uniq.size < 3 && header != "Gender"
           @contacts.delete(header)
         end
       end
-    end
-
-    def delete_blank_non_google_columns
-      delete_blank_columns(non_google_columns) if @source_type != "google"
     end
 
     def non_google_columns
@@ -174,6 +168,13 @@ class ContactList
       @contacts = CSV::Table.new(new_contacts)
     end
 
+    def remove_duplicate_contacts(field)
+      field_hash = make_field_hash(field)
+      extract_duplicates!(field, field_hash)
+      delete_dups_from_contacts!(field_hash)
+      field_hash
+    end
+
     def make_field_hash(field)
       field_hash = {}
       @contacts.each do |contact|
@@ -185,6 +186,7 @@ class ContactList
       end
       field_hash
     end
+
 
     def extract_duplicates!(field, field_hash)
       field_hash.select! do |field_val, contact|

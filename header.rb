@@ -6,19 +6,27 @@ module Header
   include Constants
   include Util
 
+  def self.change_headers(header, config, source_type)
+    config[header].nil? ? "#{SHORTNAMES[source_type]} - #{header}" : config[header]
+  end
+
   def self.headers_in_order(contacts, source_type)
     new_headers = self.delete_nil_headers(contacts)
-    new_headers = self.update_headers(contacts, source_type)
+    new_headers = self.update_ordered_headers(new_headers, source_type)
     self.add_missing_headers(new_headers, contacts)
   end
 
-  def self.non_google_headers(contacts, source_type)
-    headers = contacts.headers - G_HEADERS
-    source_type == "icloud" ? headers - ["ID"] : headers
+  def self.delete_nil_headers(contacts)
+    contacts.headers.select {|h| !Util.nil_or_empty? contacts[h]}
   end
 
-  def self.update_headers(contacts, source_type)
-    ["ID"] + G_HEADERS - ["Notes"] + self.non_google_headers(contacts, source_type) + ["Notes"]
+  def self.update_ordered_headers(headers, source_type)
+    ["ID"] + G_HEADERS - ["Notes"] + self.non_google_headers(headers, source_type) + ["Notes"]
+  end
+
+  def self.non_google_headers(headers, source_type)
+    headers = headers - G_HEADERS
+    source_type == "icloud" ? headers - ["ID"] : headers
   end
 
   def self.add_missing_headers(headers, contacts)
@@ -34,10 +42,5 @@ module Header
       !Util.nil_or_empty?(contact[header]) ? contact[header] : nil
     end
   end
-
-  def self.delete_nil_headers(contacts)
-    contacts.headers.select {|h| !Util.nil_or_empty? contacts[h]}
-  end
-
 
 end

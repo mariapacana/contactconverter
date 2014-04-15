@@ -30,6 +30,9 @@ def combine_and_convert
   puts "deduping names..."
   google.remove_and_process_duplicate_contacts("Name")
 
+  puts "deduping addresses..."
+  google.remove_and_process_duplicate_contacts("Address 1 - Street")
+
   puts "saving final version..."
   google.save_to_file("all_contacts_after.csv")
 end
