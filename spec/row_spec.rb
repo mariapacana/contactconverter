@@ -14,6 +14,7 @@ describe Row do
   let (:phone_2) {CSV::Row.new(phone_headers, ["999-999-9999 ext. 9999", nil, "9-999-999-999e, ext.t9999", nil, "99-999-9999 Ext. 999,", nil,"(999) 999-9999 EXT 999", nil,"999-999-9999 Ext 9", nil,])}
   let (:bad_email) {CSV::Row.new(FIELDS["emails"]["value"], ["'>,Mugwump Gundrun' <Mugwump.Gundrun@'@smtp5.Homesteadmail.com", nil, nil, nil])}
   let (:good_email) {CSV::Row.new(FIELDS["emails"]["value"], ["hey@there.com", "so@what.com", nil, nil])}
+  let (:email_mixedcase) {CSV::Row.new(FIELDS["emails"]["value"], ["hey@THERE.com", "So@WHAT.com", nil, nil])}
 
   describe "#get_phone_types" do
     before(:each) do
@@ -76,6 +77,14 @@ describe Row do
       phone_2["Phone 2 - Value"].should eq("'19999999999 Ext. 9999")
       phone_2["Phone 3 - Value"].should eq("'999999999 Ext. 999")
       phone_2["Phone 4 - Value"].should eq("'19999999999 Ext. 999")
+    end
+  end
+
+  describe "#standardize_emails" do
+    it "should automatically downcase emails" do
+      Row.standardize_emails(email_mixedcase)
+      email_mixedcase["E-mail 1 - Value"].should eq("hey@there.com")
+      email_mixedcase["E-mail 2 - Value"].should eq("so@what.com")
     end
   end
 

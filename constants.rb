@@ -18,6 +18,8 @@ module Constants
   STRUC_WEBSITES = STRUC_FIELDS["websites"]
   STRUC_EMAILS = STRUC_FIELDS["emails"]
 
+  EMAIL_VALS = FIELDS["emails"]["value"]
+
   FIRST_EMAIL = FIELDS["emails"]["value"][0]
 
   NON_UNIQUE_FIELDS = FIELDS["phones"]["type"]+FIELDS["phones"]["value"]+FIELDS["websites"]["type"]+FIELDS["websites"]["value"]+FIELDS["addresses"]["type"]+FIELDS["addresses"]["formatted"]+FIELDS["addresses"]["type"]+FIELDS["addresses"]["street"]+FIELDS["addresses"]["city"]+FIELDS["addresses"]["pobox"]+FIELDS["addresses"]["region"]+FIELDS["addresses"]["postal_code"]+FIELDS["addresses"]["country"]+FIELDS["addresses"]["extended"]+FIELDS["emails"]["type"]+FIELDS["emails"]["value"]

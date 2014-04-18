@@ -71,6 +71,10 @@ module Row
     phone
   end
 
+  def self.standardize_emails(contact)
+    EMAIL_VALS.each {|e| contact[e] = !Util.nil_or_empty?(contact[e]) ? contact[e].downcase : ""}
+  end
+
   ## Had to replace \\n with \n.\. If we decide to save the data,
   ## will have to use String#scan.
   def self.standardize_notes(contact)
