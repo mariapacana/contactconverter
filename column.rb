@@ -6,11 +6,10 @@ module Column
   include Util
   include Constants
 
-  def self.process_duplicate_contacts(field_hash, field, source_type, headers)
-    contacts_arry = self.merge_duplicated_contacts(field_hash.values, headers)
-    dups = Util.convert_contact_arry_to_csv(contacts_arry, headers)
-    Util.write_csv_to_file("#{source_type}_#{field}_duplicates.csv", dups)
-    dups
+  def self.process_duplicate_contacts(contacts, field_hash, field, source_type, headers)
+    contacts_array = self.merge_duplicated_contacts(field_hash.values, headers)
+    ordered_contacts = contacts_array.map {|c| headers.map {|h| c[h]}}
+    ordered_contacts.each {|c| contacts << CSV::Row.new(headers, c) }
   end
 
   def self.merge_duplicated_contacts(dup_contacts_array, headers)

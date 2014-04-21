@@ -94,7 +94,7 @@ class ContactList
   def remove_and_process_duplicate_contacts(field)
     raise(ArgumentError, "field must be a header") unless G_HEADERS.include?(field)
     field_hash = remove_duplicate_contacts(field)
-    Column.process_duplicate_contacts(field_hash, field, @source_type, headers)
+    Column.process_duplicate_contacts(@contacts, field_hash, field, @source_type, headers)
   end
 
   private

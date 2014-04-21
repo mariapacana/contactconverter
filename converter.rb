@@ -21,14 +21,14 @@ def combine_and_convert
   puts "saving to file..."
   google.save_to_file("all_contacts_merged.csv")
 
+  puts "deduping names..."
+  google.remove_and_process_duplicate_contacts("Name")
+
   puts "deduping emails..."
   google.remove_and_process_duplicate_contacts("E-mail 1 - Value")
 
   puts "deduping phones..."
   google.remove_and_process_duplicate_contacts("Phone 1 - Value")
-
-  puts "deduping names..."
-  google.remove_and_process_duplicate_contacts("Name")
 
   puts "deduping addresses..."
   google.remove_and_process_duplicate_contacts("Address 1 - Street")

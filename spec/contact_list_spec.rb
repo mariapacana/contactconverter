@@ -136,7 +136,6 @@ describe ContactList do
         sageact_dups.add_id_column
         sageact_dups.remove_and_process_duplicate_contacts("E-mail 1 - Value")
       end
-      let(:email_dups) {CSV.read(File.open(File.expand_path("../google_E-mail 1 - Value_duplicates.csv", "__FILE__")), headers: true)}
       it "should merge together emails" do
         email_dups.size.should eq(1)
         sageact_dups.contacts.size.should eq(2)
