@@ -114,7 +114,7 @@ module Row
       if Util.nil_or_empty?(contact["Given Name"]) && Util.nil_or_empty?(contact["Family Name"])
         contact["Name"] = ""
       else
-        contact["Name"] = "#{contact["Given Name"]} #{contact["Family Name"]}"
+        contact["Name"] = "#{contact["Given Name"]} #{contact["Family Name"]}".strip
       end
     end
   end

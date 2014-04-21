@@ -1,8 +1,11 @@
 "E-mail 1 - Value":
-  "Name"
+ - "Name"
+ - "Given Name"
 "Phone 1 - Value":
-  "Name"
+ - "Name"
+ - "Given Name"
 "Address 1 - Street":
-  "Name"
+ - "Name"
+ - "Given Name"
 "Name":
   "E-mail 1 - Value"

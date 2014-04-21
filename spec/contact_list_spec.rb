@@ -14,8 +14,8 @@ describe ContactList do
   let (:sageact) {ContactList.new(source_file: File.expand_path("../fixtures/sageact_subset.csv", __FILE__),
                                  config_file: File.expand_path("../../config/sageact.yaml", __FILE__))}
   let (:dups) {ContactList.new(source_file: File.expand_path("../fixtures/contact_duplicates_col.csv", __FILE__))}
+  let (:title_dups) {ContactList.new(source_file: File.expand_path("../fixtures/overcorrecting.csv", __FILE__))}
   let (:sageact_dups) {ContactList.new(source_file: File.expand_path("../fixtures/sage_duplicates.csv", __FILE__), config_file: File.expand_path("../../config/sageact.yaml", __FILE__))}
-
   let(:email_hash){dups.remove_duplicate_contacts("E-mail 1 - Value")}
 
   before(:each) do
@@ -54,7 +54,7 @@ describe ContactList do
       new_icloud.headers[-1] == "Notes"
     end
     it "should have the same number of contacts" do
-      (new_icloud.size).should eq(6)
+      (new_icloud.size).should eq(7)
     end
     context "when given invalid args" do
       it "should raise error" do
@@ -78,7 +78,7 @@ describe ContactList do
       icloud.contacts[0]["E-mail 3 - Value"].should be_empty
     end
     it "should remove contacts without enough info" do
-      icloud.contacts["Name"].should_not include("Widgy")
+      icloud.contacts.size.should eq(3)
     end
     it "should delete headers" do
       icloud.headers.should_not include("IC - Business Address2")
@@ -90,7 +90,7 @@ describe ContactList do
     it "should add ids to columns without any" do
       icloud.add_id_column
       icloud.contacts[0]["ID"].should eq("1")
-      icloud.contacts[-1]["ID"].should eq("2")
+      icloud.contacts[-1]["ID"].should eq("3")
     end
   end
 
@@ -99,18 +99,13 @@ describe ContactList do
       before(:each) do 
         dups.remove_and_process_duplicate_contacts("E-mail 1 - Value")
       end
-      let(:email_dups) {CSV.read(File.open(File.expand_path("../google_E-mail 1 - Value_duplicates.csv", "__FILE__")), headers: true)}
-      it "removes email duplicates from list of contacts" do
-        dups.contacts["E-mail 1 - Value"].should include("sally@whelk.com")
-        dups.contacts["E-mail 1 - Value"].should include("downy@down.com")
-        dups.contacts["E-mail 1 - Value"].should_not include("cal@gopher.com")
-      end
-      it "saves email duplicates to a file and merges them together" do
-        email_dups.size.should eq(3)
-        email_dups[0]["Given Name"].should eq("Myrtle")
-        email_dups[0]["Family Name"].should eq("Wyckoff\nWackoff")
-        email_dups[0]["ID"].should eq("1\n2\n11")
-        email_dups[2]["Name"].should eq("Hal Hal\nHal")
+      it "merges contacts with duplicated emails together" do
+        dups.size.should eq(9)
+        dups.contacts["Given Name"].should include("Myrtle")
+        dups.contacts["Family Name"].should include("Wyckoff\nWackoff")
+        dups.contacts["ID"].should include("1\n2\n13")
+        dups.contacts["ID"].should include("10\n11\n12")
+        dups.contacts["Name"].should include("Hal Hal\nHal")
       end
     end
     context "when processing phone duplicates" do
@@ -118,12 +113,9 @@ describe ContactList do
         dups.add_id_column
         dups.remove_and_process_duplicate_contacts("Phone 1 - Value")
       end
-      let(:phone_dups) {CSV.read(File.open(File.expand_path("../google_Phone 1 - Value_duplicates.csv", "__FILE__")), headers: true)}
-      it "removes phone duplicates from list of contacts" do
-        dups.contacts["Name"].should_not include("Edgar Thistledown")
-      end
-      it "saves phone duplicates to a file and merges them together" do
-        phone_dups.size.should eq(1)
+      it "merges contacts with duplicated phone numbers together" do
+        dups.size.should eq(15)
+        dups.contacts["Name"].should include("Edgar Thistledown\nEdgar\nThistledown")
       end
     end
     context "when given invalid arguments" do
@@ -137,8 +129,13 @@ describe ContactList do
         sageact_dups.remove_and_process_duplicate_contacts("E-mail 1 - Value")
       end
       it "should merge together emails" do
-        email_dups.size.should eq(1)
-        sageact_dups.contacts.size.should eq(2)
+        sageact_dups.contacts.size.should eq(3)
+      end
+    end
+    context "when processing dups that are prefixed by a title" do
+      it "recognizes that they are the same" do
+        title_dups.remove_and_process_duplicate_contacts("E-mail 1 - Value")
+        title_dups.contacts["Name"].should include("President Higgledy Piggledy\nHiggledy Piggledy")
       end
     end
   end

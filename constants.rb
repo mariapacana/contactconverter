@@ -19,6 +19,7 @@ module Constants
   STRUC_EMAILS = STRUC_FIELDS["emails"]
 
   EMAIL_VALS = FIELDS["emails"]["value"]
+  PHONE_VALS = FIELDS["phones"]["value"]
 
   FIRST_EMAIL = FIELDS["emails"]["value"][0]
 

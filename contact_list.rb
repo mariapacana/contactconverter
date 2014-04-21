@@ -93,8 +93,9 @@ class ContactList
 
   def remove_and_process_duplicate_contacts(field)
     raise(ArgumentError, "field must be a header") unless G_HEADERS.include?(field)
+    saved_headers = headers
     field_hash = remove_duplicate_contacts(field)
-    Column.process_duplicate_contacts(@contacts, field_hash, field, @source_type, headers)
+    Column.process_duplicate_contacts(@contacts, field_hash, field, @source_type, saved_headers)
   end
 
   private
@@ -154,7 +155,7 @@ class ContactList
         Row.standardize_phones(contact, FIELDS["phones"]["value"])
         Row.standardize_emails(contact)
         Row.delete_invalid_names(contact)
-        Row.move_contact_name(contact)
+        # Row.move_contact_name(contact)
         Row.make_name(contact)
         Row.standardize_notes(contact)
         Row.remove_duplicates(STRUC_EMAILS, contact)
