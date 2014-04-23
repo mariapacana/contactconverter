@@ -100,12 +100,15 @@ describe ContactList do
         dups.remove_and_process_duplicate_contacts("E-mail 1 - Value")
       end
       it "merges contacts with duplicated emails together" do
-        dups.size.should eq(9)
+        dups.size.should eq(10)
         dups.contacts["Given Name"].should include("Myrtle")
         dups.contacts["Family Name"].should include("Wyckoff\nWackoff")
         dups.contacts["ID"].should include("1\n2\n13")
         dups.contacts["ID"].should include("10\n11\n12")
         dups.contacts["Name"].should include("Hal Hal\nHal")
+      end
+      it "merges contacts with names that are subsets of one another" do
+        dups.contacts["Name"].should include("Owner Hedwig Aardvark\nHedwig Aardvark")
       end
     end
     context "when processing phone duplicates" do
@@ -114,8 +117,10 @@ describe ContactList do
         dups.remove_and_process_duplicate_contacts("Phone 1 - Value")
       end
       it "merges contacts with duplicated phone numbers together" do
-        dups.size.should eq(15)
+        dups.save_to_file("test")
+        dups.size.should eq(17)
         dups.contacts["Name"].should include("Edgar Thistledown\nEdgar\nThistledown")
+        dups.contacts["Phone 1 - Type"].should include("Mobile\nHome")
       end
     end
     context "when given invalid arguments" do

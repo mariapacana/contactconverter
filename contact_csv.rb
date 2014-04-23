@@ -34,7 +34,7 @@ module ContactCSV
   end
 
   def self.backup_field_similar?(field, contact)
-    vals = contact[field].map {|v| !Util.nil_or_empty?(v) ? v.split("\n") : nil}.flatten
+    vals = Util.flatten_and_get_non_nil_uniques(contact[field])
     vals = vals.map { |val| val.nil? ? nil : val[0..2].downcase}.uniq
     self.one_val_or_fewer(vals)
   end

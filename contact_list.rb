@@ -152,10 +152,9 @@ class ContactList
         Row.standardize_google(STRUC_PHONES, contact) if @source_type == "google"
         Row.standardize_google(STRUC_ADDRESSES, contact) if @source_type == "google"
         Row.standardize_google(STRUC_EMAILS, contact) if @source_type == "google"
-        Row.standardize_phones(contact, FIELDS["phones"]["value"])
+        Row.standardize_phones(contact, PHONE_VALS)
         Row.standardize_emails(contact)
         Row.delete_invalid_names(contact)
-        # Row.move_contact_name(contact)
         Row.make_name(contact)
         Row.standardize_notes(contact)
         Row.remove_duplicates(STRUC_EMAILS, contact)

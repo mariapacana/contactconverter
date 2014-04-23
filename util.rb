@@ -9,15 +9,24 @@ module Util
   end
 
   def self.join_and_format_uniques(enum)
-    self.join_and_strip_uniques(self.uniq_not_nil(enum))
+    enum_uniqs = self.flatten_and_get_non_nil_uniques(enum)
+    self.join_and_strip(enum_uniqs)
   end
 
-  def self.uniq_not_nil(enum)
-    enum.uniq.delete_if {|e| self.nil_or_empty?(e)}
+  def self.not_nil(enum)
+    enum.delete_if {|e| self.nil_or_empty?(e)}
   end
 
-  def self.join_and_strip_uniques(uniques)
-    uniques.map{|u| u.strip}.join("\n").strip
+  def self.join_and_strip(enum)
+    enum.map{|u| u.strip}.join("\n").strip
+  end
+
+  def self.flatten_and_get_non_nil_uniques(enum)
+    self.flatten_and_get_uniques(self.not_nil(enum))
+  end
+
+  def self.flatten_and_get_uniques(enum)
+    enum.map {|e| e.split("\n")}.flatten.uniq
   end
 
   def self.set_value_if_nil(my_hash, my_key, new_value)

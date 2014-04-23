@@ -144,6 +144,7 @@ describe Row do
     let(:duplicates) {CSV.read(File.open(File.expand_path("../fixtures/contact_duplicates.csv", __FILE__)), headers: true)}
     let(:email_dups) {duplicates[0]}
     let(:phone_dups) {duplicates[1]}
+    let(:phone_dups_2) {duplicates[11]}
     let(:website_dups) {duplicates[2]}
     let(:email_dups_no_types) {duplicates[3]}
     let(:address_dups) {duplicates[4]}
@@ -171,6 +172,10 @@ describe Row do
       address_dups["Address 1 - Street"].should eq("1180 Stony Marsh Blvd.")
       address_dups["Address 2 - Country"].should be_empty
       address_dups["Address 2 - Postal Code"].should be_empty
+    end
+    it "merges together phone & address type fields when de-duping" do
+      Row.remove_duplicates(STRUC_PHONES, phone_dups_2)
+      phone_dups_2["Phone 1 - Type"].should eq("Home\nMobile")
     end
     it "collapses addresses that are subsets of other addresses" do
       Row.remove_duplicates(STRUC_ADDRESSES, address_dups_2)
