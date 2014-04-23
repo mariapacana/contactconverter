@@ -21,12 +21,16 @@ module Header
   end
 
   def self.update_ordered_headers(headers, source_type)
-    ["ID"] + G_HEADERS - ["Notes"] + self.non_google_headers(headers, source_type) + ["Notes"]
+    ["ID"] + self.google_then_non_google_no_id_notes(headers, source_type) + ["Notes"]
   end
 
   def self.non_google_headers(headers, source_type)
     headers = headers - G_HEADERS
-    source_type == "icloud" ? headers - ["ID"] : headers
+  end
+
+  def self.google_then_non_google_no_id_notes(headers, source_type)
+    new_headers = G_HEADERS + self.non_google_headers(headers, source_type)
+    new_headers.delete_if {|h| h == "Notes" || h == "ID"}
   end
 
   def self.add_missing_headers(headers, contacts)
